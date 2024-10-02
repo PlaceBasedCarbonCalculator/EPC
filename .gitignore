@@ -47,3 +47,12 @@ po/*~
 
 # RStudio Connect folder
 rsconnect/
+uprn_with_buidling_type.Rds
+dec_all_raw.Rds
+epc_domestic_all_raw.Rds
+epc_domestic_reccs_all_raw.Rds
+epc_nondomestic_all_raw.Rds
+epc_nondomestic_reccs_all_raw.Rds
+epc_scotland_domestic_all_raw.Rds
+epc_scotland_nondomestic_all_raw.Rds
+uprn_with_buidling_type.gpkg
