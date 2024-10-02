@@ -1,5 +1,5 @@
-ncores = 10
-certs <- readRDS("epc_domestic_all_raw.Rds")
+ncores = 20
+certs <- readRDS("epc_scotland_domestic_all_raw.Rds")
 uprn <- readRDS("../build/_targets/objects/uprn")
 uprn <- sf::st_as_sf(uprn)
 
@@ -10,9 +10,27 @@ library(readr)
 source("R/funtions.R")
 source("R/translate_welsh.R")
 
+# Rename to England names
+names(certs)[names(certs) == "Property_UPRN"] = "UPRN"
+names(certs)[names(certs) == "Current energy efficiency rating band"] = "CURRENT_ENERGY_RATING"
+names(certs)[names(certs) == "Current energy efficiency rating"] = "CURRENT_ENERGY_EFFICIENCY"
+names(certs)[names(certs) == "Potential Energy Efficiency Rating"] = "POTENTIAL_ENERGY_EFFICIENCY"
+names(certs)[names(certs) == "Date of Assessment"] = "INSPECTION_DATE"
+names(certs)[names(certs) == "Built Form"] = "BUILT_FORM"
+names(certs)[names(certs) == "Property Type"] = "PROPERTY_TYPE"
+names(certs)[names(certs) == "Tenure"] = "TENURE"
+names(certs)[names(certs) == "Part 1 Construction Age Band"] = "CONSTRUCTION_AGE_BAND"
+names(certs)[names(certs) == "Total floor area (m²)"] = "TOTAL_FLOOR_AREA"
+names(certs)[names(certs) == "Main Heating 1 Fuel Type"] = "MAIN_FUEL"
+names(certs)[names(certs) == "Multiple Glazing Type"] = "GLAZED_TYPE"
+names(certs)[names(certs) == "WALL_DESCRIPTION"] = "WALLS_DESCRIPTION"
+names(certs)[names(certs) == "WALL_ENERGY_EFF"] = "WALLS_ENERGY_EFF"
+names(certs)[names(certs) == "Photovoltaic Supply"] = "PHOTO_SUPPLY"
+names(certs)[names(certs) == "Solar Water Heating"] = "SOLAR_WATER_HEATING_FLAG"
+
 # Subset to key variables
-certs <- certs[,c("BUILDING_REFERENCE_NUMBER","ADDRESS1",
-                  "CURRENT_ENERGY_RATING","CURRENT_ENERGY_EFFICIENCY","POTENTIAL_ENERGY_EFFICIENCY","UPRN",
+certs <- certs[,c("UPRN","ADDRESS1",
+                  "CURRENT_ENERGY_RATING","CURRENT_ENERGY_EFFICIENCY","POTENTIAL_ENERGY_EFFICIENCY",
                   "INSPECTION_DATE","BUILT_FORM","PROPERTY_TYPE","TENURE","CONSTRUCTION_AGE_BAND",
                   "TOTAL_FLOOR_AREA","MAIN_FUEL","MAINHEAT_DESCRIPTION",
                   "GLAZED_TYPE",
@@ -43,6 +61,8 @@ certs <- certs[!sf::st_is_empty(certs),]
 
 # Time consuming parts ----------------------------------------------------
 
+plan(multisession, workers = ncores)
+
 certs$FLOOR_DESCRIPTION <- future_map_chr(certs$FLOOR_DESCRIPTION, splitwelsh,  .progress = TRUE)
 certs$FLOOR_DESCRIPTION <- future_map_chr(certs$FLOOR_DESCRIPTION, standardclean,  .progress = TRUE)
 certs$FLOOR_DESCRIPTION <- future_map_chr(certs$FLOOR_DESCRIPTION, translatewelsh,  .progress = TRUE)
@@ -54,16 +74,16 @@ certs$WALLS_DESCRIPTION <- future_map_chr(certs$WALLS_DESCRIPTION, common_clean,
 certs$ROOF_DESCRIPTION <-  future_map_chr(certs$ROOF_DESCRIPTION,  common_clean,  .progress = TRUE)
 
 certs$MAINHEATCONT_DESCRIPTION <- future_map_chr(certs$MAINHEATCONT_DESCRIPTION, common_clean,  .progress = TRUE, split = FALSE, fix = FALSE)
-certs$LIGHTING_DESCRIPTION <-     future_map_chr(certs$LIGHTING_DESCRIPTION,     common_clean,  .progress = TRUE, split = TRUE, fix = FALSE)
+#certs$LIGHTING_DESCRIPTION <-     future_map_chr(certs$LIGHTING_DESCRIPTION,     common_clean,  .progress = TRUE, split = TRUE, fix = FALSE)
 
 certs$MAINHEAT_DESCRIPTION   <- future_map_chr(certs$MAINHEAT_DESCRIPTION,   common_clean,  .progress = TRUE, fix = FALSE)
 certs$HOTWATER_DESCRIPTION   <- future_map_chr(certs$HOTWATER_DESCRIPTION,   common_clean,  .progress = TRUE, fix = FALSE)
-certs$SECONDHEAT_DESCRIPTION <- future_map_chr(certs$SECONDHEAT_DESCRIPTION, common_clean,  .progress = TRUE, fix = FALSE)
+#certs$SECONDHEAT_DESCRIPTION <- future_map_chr(certs$SECONDHEAT_DESCRIPTION, common_clean,  .progress = TRUE, fix = FALSE)
 certs$WINDOWS_DESCRIPTION    <- future_map_chr(certs$WINDOWS_DESCRIPTION,    common_clean,  .progress = TRUE, fix = FALSE)
 
 
-certs$FLOOR_LEVEL <- future_map_chr(certs$FLOOR_LEVEL, standardclean,  .progress = TRUE)
-certs$TRANSACTION_TYPE <- future_map_chr(certs$TRANSACTION_TYPE, standardclean,  .progress = TRUE)
+#certs$FLOOR_LEVEL <- future_map_chr(certs$FLOOR_LEVEL, standardclean,  .progress = TRUE)
+#certs$TRANSACTION_TYPE <- future_map_chr(certs$TRANSACTION_TYPE, standardclean,  .progress = TRUE)
 certs$MAIN_FUEL <- future_map_chr(certs$MAIN_FUEL, standardclean,  .progress = TRUE)
 
 
@@ -451,10 +471,10 @@ sub_mainheat_description("solar-assisted","solar assisted")
 sub_mainheat_description("boiler and ,","boiler and,")
 sub_mainheat_description("secondary wood pellets","wood pellets")
 
-sub_mainheat_description(c("full double glazed",
-                           "full secondary glazing",
-                           "partial double glazing",
-                           "single glazed"),"")
+sub_mainheat_description("full double glazed","")
+sub_mainheat_description("full secondary glazing","")
+sub_mainheat_description("partial double glazing","")
+sub_mainheat_description("single glazed","")
 
 
 
@@ -975,104 +995,104 @@ HOTWATER_DESCRIPTION = c(", plus solar, no cylinder thermostat",
 
 # FLOOR_LEVEL -------------------------------------------------------------
 
-certs$FLOOR_LEVEL[certs$FLOOR_LEVEL == "ground floor"] <- "ground"
-
-FLOOR_LEVEL = c("basement","ground","1st","mid floor",
-                "2nd","3rd",
-                paste0(c(4:20,24:30),"th"),
-                "21st","22nd","23rd",
-                "21st or above","top floor", NA)
+# certs$FLOOR_LEVEL[certs$FLOOR_LEVEL == "ground floor"] <- "ground"
+# 
+# FLOOR_LEVEL = c("basement","ground","1st","mid floor",
+#                 "2nd","3rd",
+#                 paste0(c(4:20,24:30),"th"),
+#                 "21st","22nd","23rd",
+#                 "21st or above","top floor", NA)
 
 
 
 
 # SECONDHEAT_DESCRIPTION --------------------------------------------------
 
-td_SECONDHEAT_DESCRIPTION("room heaters, lpg","room heaters, lpg")
-td_SECONDHEAT_DESCRIPTION("dim","none")
-td_SECONDHEAT_DESCRIPTION("portable electric heaters(assumed)","portable electric heaters (assumed)")
-
-td_SECONDHEAT_DESCRIPTION("room heaters, (null)","room heaters,")
-td_SECONDHEAT_DESCRIPTION("room heaters, bulk lpg","room heaters, lpg")
-td_SECONDHEAT_DESCRIPTION("room heaters, bulk wood pellets","room heaters, wood pellets")
-td_SECONDHEAT_DESCRIPTION(c(",","sap05:secondary-heating"),NA)
-td_SECONDHEAT_DESCRIPTION("room heaters, heating oil","room heaters, oil")
-td_SECONDHEAT_DESCRIPTION(c("room heaters, main wood pellets", "room heaters, secondary wood pellets", "room heaters, wood pellets (bags)"),"room heaters, wood pellets")
-td_SECONDHEAT_DESCRIPTION("room heaters","room heaters,")
-td_SECONDHEAT_DESCRIPTION("community, community","community scheme")
-td_SECONDHEAT_DESCRIPTION(c("gas (including lpg) room heaters, gas","mains gas room heaters, gas"),"room heaters, mains gas")
-td_SECONDHEAT_DESCRIPTION("room heaters","room heaters,")
-td_SECONDHEAT_DESCRIPTION("lpg room heaters, gas","room heaters, lpg")
-
-
-
-
-SECONDHEAT_DESCRIPTION = c("none",
-                           "community scheme",
-                           "community scheme, heat from boilers mains gas",
-                           ", gas",
-                           "portable electric heaters",
-                           "portable electric heaters (assumed)",
-                           "gas/lpg boiler pre-1998, with fan-assisted flue, gas",
-                           "gas/lpg boiler pre-1998 with balanced or open-flue, gas",
-                           "gas/lpg boiler 1998 or later, gas",
-                           "gas/lpg cpsu, gas",
-                           "electric underfloor heating (standard tariff), electric",
-                           "electric underfloor heating",
-                           "electric ceiling heating",
-                           "hot-water-only systems, electric",
-                           "hot-water-only systems, gas",
-                           "other space heating systems, electric",
-                           "room heaters,",
-                           "room heaters, b30k",
-                           "room heaters, bioethanol",
-                           "room heaters, oil",
-                           "room heaters, electric",
-                           "room heaters, coal",
-                           "room heaters, dual fuel (mineral and wood)",
-                           "room heaters, dual fuel",
-                           "room heaters, wood pellets",
-                           "room heaters, wood logs",
-                           "room heaters, wood chips",
-                           "room heaters, smokeless fuel",
-                           "room heaters, lpg",
-                           "room heaters, lng",
-                           "room heaters, bottled lpg",
-                           "room heaters, mains gas",
-                           "room heaters, bottled gas",
-                           "room heaters, anthracite",
-                           "room heaters, appliances able to use mineral oil or liquid biofuel",
-                           "room heaters, biodiesel from any biomass source",
-                           "room heaters, biomass",
-                           "room heaters, heat from eletric heat pump",
-                           "room heaters, liquid biofuel",
-                           "room heaters, rapeseed oil",
-                           "room heaters, waste combustion",
-                           NA)
+# td_SECONDHEAT_DESCRIPTION("room heaters, lpg","room heaters, lpg")
+# td_SECONDHEAT_DESCRIPTION("dim","none")
+# td_SECONDHEAT_DESCRIPTION("portable electric heaters(assumed)","portable electric heaters (assumed)")
+# 
+# td_SECONDHEAT_DESCRIPTION("room heaters, (null)","room heaters,")
+# td_SECONDHEAT_DESCRIPTION("room heaters, bulk lpg","room heaters, lpg")
+# td_SECONDHEAT_DESCRIPTION("room heaters, bulk wood pellets","room heaters, wood pellets")
+# td_SECONDHEAT_DESCRIPTION(c(",","sap05:secondary-heating"),NA)
+# td_SECONDHEAT_DESCRIPTION("room heaters, heating oil","room heaters, oil")
+# td_SECONDHEAT_DESCRIPTION(c("room heaters, main wood pellets", "room heaters, secondary wood pellets", "room heaters, wood pellets (bags)"),"room heaters, wood pellets")
+# td_SECONDHEAT_DESCRIPTION("room heaters","room heaters,")
+# td_SECONDHEAT_DESCRIPTION("community, community","community scheme")
+# td_SECONDHEAT_DESCRIPTION(c("gas (including lpg) room heaters, gas","mains gas room heaters, gas"),"room heaters, mains gas")
+# td_SECONDHEAT_DESCRIPTION("room heaters","room heaters,")
+# td_SECONDHEAT_DESCRIPTION("lpg room heaters, gas","room heaters, lpg")
+# 
+# 
+# 
+# 
+# SECONDHEAT_DESCRIPTION = c("none",
+#                            "community scheme",
+#                            "community scheme, heat from boilers mains gas",
+#                            ", gas",
+#                            "portable electric heaters",
+#                            "portable electric heaters (assumed)",
+#                            "gas/lpg boiler pre-1998, with fan-assisted flue, gas",
+#                            "gas/lpg boiler pre-1998 with balanced or open-flue, gas",
+#                            "gas/lpg boiler 1998 or later, gas",
+#                            "gas/lpg cpsu, gas",
+#                            "electric underfloor heating (standard tariff), electric",
+#                            "electric underfloor heating",
+#                            "electric ceiling heating",
+#                            "hot-water-only systems, electric",
+#                            "hot-water-only systems, gas",
+#                            "other space heating systems, electric",
+#                            "room heaters,",
+#                            "room heaters, b30k",
+#                            "room heaters, bioethanol",
+#                            "room heaters, oil",
+#                            "room heaters, electric",
+#                            "room heaters, coal",
+#                            "room heaters, dual fuel (mineral and wood)",
+#                            "room heaters, dual fuel",
+#                            "room heaters, wood pellets",
+#                            "room heaters, wood logs",
+#                            "room heaters, wood chips",
+#                            "room heaters, smokeless fuel",
+#                            "room heaters, lpg",
+#                            "room heaters, lng",
+#                            "room heaters, bottled lpg",
+#                            "room heaters, mains gas",
+#                            "room heaters, bottled gas",
+#                            "room heaters, anthracite",
+#                            "room heaters, appliances able to use mineral oil or liquid biofuel",
+#                            "room heaters, biodiesel from any biomass source",
+#                            "room heaters, biomass",
+#                            "room heaters, heat from eletric heat pump",
+#                            "room heaters, liquid biofuel",
+#                            "room heaters, rapeseed oil",
+#                            "room heaters, waste combustion",
+#                            NA)
 
 
 
 # TRANSACTION_TYPE --------------------------------------------------------
 
-certs$TRANSACTION_TYPE[certs$TRANSACTION_TYPE == "not recorded"] <- NA
-certs$TRANSACTION_TYPE[certs$TRANSACTION_TYPE == "none of the above"] <- NA
-certs$TRANSACTION_TYPE[certs$TRANSACTION_TYPE == "no data!"] <- NA
-certs$TRANSACTION_TYPE[certs$TRANSACTION_TYPE == "unknown"] <- NA
-certs$TRANSACTION_TYPE <- gsub(" this is for backwards compatibility only and should not be used","",certs$TRANSACTION_TYPE, fixed = TRUE)
-
-TRANSACTION_TYPE = c("new dwelling",
-                     "rental (social)",
-                     "rental (private)",
-                     "eco assessment",
-                     "marketed sale",
-                     "non marketed sale",
-                     "assessment for green deal",
-                     "rhi application",
-                     "rental",
-                     "fit application",
-                     "following green deal",
-                     "stock condition survey",
-                     NA)
+# certs$TRANSACTION_TYPE[certs$TRANSACTION_TYPE == "not recorded"] <- NA
+# certs$TRANSACTION_TYPE[certs$TRANSACTION_TYPE == "none of the above"] <- NA
+# certs$TRANSACTION_TYPE[certs$TRANSACTION_TYPE == "no data!"] <- NA
+# certs$TRANSACTION_TYPE[certs$TRANSACTION_TYPE == "unknown"] <- NA
+# certs$TRANSACTION_TYPE <- gsub(" this is for backwards compatibility only and should not be used","",certs$TRANSACTION_TYPE, fixed = TRUE)
+# 
+# TRANSACTION_TYPE = c("new dwelling",
+#                      "rental (social)",
+#                      "rental (private)",
+#                      "eco assessment",
+#                      "marketed sale",
+#                      "non marketed sale",
+#                      "assessment for green deal",
+#                      "rhi application",
+#                      "rental",
+#                      "fit application",
+#                      "following green deal",
+#                      "stock condition survey",
+#                      NA)
 
 
 
@@ -1111,13 +1131,13 @@ TRANSACTION_TYPE = c("new dwelling",
 
 # Finish Up ---------------------------------------------------------------
 
-saveRDS(certs,"../inputdata/epc/epc_domestic_clean.Rds")
+saveRDS(certs,"../inputdata/epc/epc_scotland_domestic_clean.Rds")
 
 
 validate(FLOOR_DESCRIPTION, "FLOOR_DESCRIPTION")
-validate(TRANSACTION_TYPE, "TRANSACTION_TYPE")
-validate(SECONDHEAT_DESCRIPTION, "SECONDHEAT_DESCRIPTION")
-validate(FLOOR_LEVEL, "FLOOR_LEVEL")
+#validate(TRANSACTION_TYPE, "TRANSACTION_TYPE")
+#validate(SECONDHEAT_DESCRIPTION, "SECONDHEAT_DESCRIPTION")
+#validate(FLOOR_LEVEL, "FLOOR_LEVEL")
 validate(HOTWATER_DESCRIPTION, "HOTWATER_DESCRIPTION")
 validate(WINDOWS_DESCRIPTION, "WINDOWS_DESCRIPTION")
 validate(MAINHEATCONT_DESCRIPTION, "MAINHEATCONT_DESCRIPTION")

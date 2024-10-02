@@ -30,6 +30,7 @@ translatewelsh <- function(x){
   
   x <- gsub("rhaglennydd","programmer",x, fixed = TRUE)
   x <- gsub("a thermostat ystafell","and room thermostat",x, fixed = TRUE)
+  x <- gsub("a thermostatau ystafell","and room thermostat",x, fixed = TRUE)
   x <- gsub("dim thermostat ystafell","no room thermostat",x, fixed = TRUE)
   x <- gsub("thermostat ystafell a trvs","room thermostat and trvs",x, fixed = TRUE)
   
@@ -123,6 +124,7 @@ translatewelsh <- function(x){
   x <- gsub("rheoli?r tal a llaw","manual charge control",x, fixed = TRUE)
   
   x <- gsub("system dalu wedi'i chysylltu â defnyddio gwres cymunedol","charging system linked to use of community heating",x, fixed = TRUE)
+  x <- gsub("system dalu wediâ€™i chysylltu ã¢ defnyddio gwres cymunedol","charging system linked to use of community heating",x, fixed = TRUE)
   
   x <- gsub("t?l un gyfradd","flat rate charging",x, fixed = TRUE)
   x <- gsub("tã¢l un gyfradd","flat rate charging",x, fixed = TRUE)
@@ -162,7 +164,7 @@ translatewelsh <- function(x){
   x <- gsub("gwresogyddion trydan cludadwy","portable electric heaters",x, fixed = TRUE)
   
   x <- gsub("igçör awyr y tu allan","the sky outside",x, fixed = TRUE)
-  x <- gsub("wedigçöi inswleiddio","insualted",x, fixed = TRUE)
+  x <- gsub("wedigçöi inswleiddio","insulated",x, fixed = TRUE)
   
   x <- gsub("ceudod wedigçöi lenwi","cavity after filling",x, fixed = TRUE)
   x <- gsub("fel ygçöu hadeiladwyd","as built",x, fixed = TRUE)
@@ -170,6 +172,25 @@ translatewelsh <- function(x){
   x <- gsub("wedigçöi inswleiddio","insulated",x, fixed = TRUE)
   x <- gsub("ffr+óm bren","wooden frame",x, fixed = TRUE)
   x <- gsub("wedigçöu hadeiladu yn +¦l system","built in system",x, fixed = TRUE)
+  x <- gsub("wedigçöi hinswleiddio","double insulation",x, fixed = TRUE)
+  x <- gsub("pelenni coed","wood pellets",x, fixed = TRUE)
+  
+  x <- gsub("pwmp gwres sygçön tarddu yn y ddaear","ground source heat pump",x, fixed = TRUE)
+  x <- gsub("pwmp gwres sygçön tarddu yn yr awyr","air sourced heat pump",x, fixed = TRUE)
+  
+  x <- gsub("wedi?i ragdybio ar gyfer y rhan fwyaf o?r ystafelloedd","assumed for most rooms",x, fixed = TRUE)
+  
+  x <- gsub("rhagdybir bod","assumed",x, fixed = TRUE)
+  
+  x <- gsub("ogçör brif system","from main system",x, fixed = TRUE)
+  x <- gsub("o???r brif system","from main system",x, fixed = TRUE)
+  x <- gsub("nwy wrth fwy nag un pwynt","gas at more than one point",x, fixed = TRUE)
+  x <- gsub("gydag ynni?r haul","with solar energy",x, fixed = TRUE)
+  
+  x <- gsub("ar unwaith yn y fan lle maegçön cael ei ddefnyddio","instantaneous at point of use",x, fixed = TRUE)
+  x <- gsub("ar unwaith yn y fan lle mae'n cael ei ddefnyddio","instantaneous at point of use",x, fixed = TRUE)
+  x <- gsub("adfer gwres d+¦r gwastraff","waste water heat recovery",x, fixed = TRUE)
+  
   
   # Single word translations: Risky
   x <- gsub("nenfwd","ceiling",x, fixed = TRUE)
@@ -180,5 +201,7 @@ translatewelsh <- function(x){
   x <- gsub("glo caled","anthracite",x, fixed = TRUE)
   x <- gsub("glo","coal",x, fixed = TRUE)
   x <- gsub("crog","suspended",x, fixed = TRUE)
+  x <- gsub("cowith","with",x, fixed = TRUE)
+  x <- gsub("rheiddiaduron","radiators",x, fixed = TRUE)
   return(x)
 }

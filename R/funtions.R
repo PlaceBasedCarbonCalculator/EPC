@@ -21,13 +21,11 @@ fix_wm2k <- function(x, check = FALSE){
   
   if(grepl("w",x)){
     x <- gsub("²","2", x)
-    x <- gsub("w/m?k","w/m2k", x, fixed = TRUE)
-    x <- gsub("w/m¦k","w/m2k", x, fixed = TRUE)
-    x <- gsub("w/m+é¦k","w/m2k", x, fixed = TRUE)
-    x <- gsub("w/ma?k","w/m2k", x, fixed = TRUE)
-    x <- gsub("w/mâ2k","w/m2k", x, fixed = TRUE)
-    x <- gsub("w/mand#0178;k","w/m2k", x, fixed = TRUE)
-    x <- gsub("w/m??k","w/m2k", x, fixed = TRUE)
+    
+    patterns <- c("w/m?k", "w/m-¦k", "w/m¦k", "w/m+é-¦k", "w/m+é¦k", "w/ma?k", "w/mâ2k", "w/mand#0178;k", "w/m??k")
+    replacements <- c("w/m2k")
+    x <- stringi::stri_replace_all_fixed(x, patterns, replacements, vectorize_all = FALSE)
+    
     x <- gsub("-","", x, fixed = TRUE)
     
     if(grepl("w/m2k", x)){
@@ -73,7 +71,7 @@ standardclean <- function(x){
   x <- gsub("  "," ", x, fixed = TRUE)
   x <- gsub("fully","full", x, fixed = TRUE)
   x <- gsub("electricity","electric", x, fixed = TRUE)
-  
+  x <- gsub("description:","", x, fixed = TRUE)
   
   return(x)
 }
