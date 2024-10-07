@@ -11,7 +11,7 @@ source("R/funtions.R")
 source("R/translate_welsh.R")
 
 # Rename to England names
-names(certs)[names(certs) == "Property_UPRN"] = "UPRN"
+names(certs)[names(certs) == "OSG_UPRN"] = "UPRN"
 names(certs)[names(certs) == "Current energy efficiency rating band"] = "CURRENT_ENERGY_RATING"
 names(certs)[names(certs) == "Current energy efficiency rating"] = "CURRENT_ENERGY_EFFICIENCY"
 names(certs)[names(certs) == "Potential Energy Efficiency Rating"] = "POTENTIAL_ENERGY_EFFICIENCY"

@@ -101,6 +101,46 @@ dom_all$wind_d = tolower(dom_all$wind_d)
 
 dom_all$water_d = tolower(dom_all$water_d)
 
+#Simplify ages
+simple_ages = function(x){
+  y = as.integer(x)
+  z = rep(NA_character_, length(y))
+  z[y < 1900] = "before 1900"
+  z[y >= 1900 & y <= 1929] = "1900-1929"
+  z[y >= 1930 & y <= 1949] = "1930-1949"
+  z[y >= 1950 & y <= 1966] = "1950-1966"
+  z[y >= 1967 & y <= 1975] = "1967-1975"
+  z[y >= 1976 & y <= 1982] = "1976-1982"
+  z[y >= 1983 & y <= 1990] = "1983-1990"
+  z[y >= 1991 & y <= 1995] = "1991-1995"
+  z[y >= 1996 & y <= 2002] = "1996-2002"
+  z[y >= 2003 & y <= 2006] = "2003-2006"
+  z[y >= 2007 & y <= 2011] = "2007-2011"
+  z[y >= 2012] = "2012 onwards"
+  
+  x = dplyr::if_else(is.na(z),x,z)
+  x[x == "before 1919"] = "before 1900"
+  x[x == "1919-1929"] = "1900-1929"
+  
+  x[x == "1950-1964"] = "1950-1966"
+  x[x == "1965-1975"] = "1967-1975"
+  x[x == "1976-1983"] = "1976-1982"
+  x[x == "1984-1991"] = "1983-1990"
+  x[x == "1992-1998"] = "1991-1995"
+  x[x == "1999-2002"] = "1996-2002"
+  x[x == "2003-2007"] = "2003-2006"
+  x[x == "2007 onwards"] = "2007-2011"
+  x[x == "2008 onwards"] = "2007-2011"
+  
+  x
+  
+}
+
+
+
+dom_all$age = simple_ages(dom_all$age)
+
+
 saveRDS(dom_all, "../inputdata/epc/GB_domestic_epc.Rds")
 
 
