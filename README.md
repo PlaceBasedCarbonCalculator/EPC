@@ -28,11 +28,11 @@ An important script is `clean_epc`, which does most of the cleaning on the text 
 
 Important cleaning functions include:
 
-1. `fix_wm2k`, which handled the many versions of `watts per square metre kelvin` and unit of heat loss into a standard format.
+1. `fix_wm2k`, which handled the many versions of `watts per square metre kelvin` (a unit of heat loss) into a standard format.
 2. `standardclean`, which removed common errors or inconsistencies (e.g. `&` vs `and`)
 3. `yn2logical`, which converts yes/no text variables to logical TRUE/FALSE
 4. `splitwelsh`, in some EPCs, the text is provided in both English and Welsh, separated by `|`; this function splits and removes the Welsh version.
-5. `translatewelsh` is used when only the Welsh test is available and translates common Welsh phrases to their English equivalents. E.g. "briciau solet" to "solid brick". I used Google Translate for these, and feedback from Welsh speakers is welcome.
+5. `translatewelsh` is used when only the Welsh text is available and translates common Welsh phrases to their English equivalents. E.g. "briciau solet" to "solid brick". I used Google Translate for these, and feedback from Welsh speakers is welcome. Oddly, EPCs in Welsh don't only occur in Wales.
 
 While the cleaning is not perfect, it does significantly reduce variation between EPCs, which is useful for analysis. For example, instead of thousands of different Main Fuel Types in the raw data, there are about 40 distinct types in the cleaned data.
 
