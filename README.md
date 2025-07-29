@@ -14,6 +14,8 @@ Data for Scotland is published at https://www.scottishepcregister.org.uk/
 
 ## Purpose of this repo
 
+![Screenshot of EPC map](/images/screenshot.jpg)
+
 This repo provides much of the pre-processing of the EPC data that is available on the www.carbon.place website. Specifically, it has 3 functions.
 
 1. To clean and summarise some of the free test fields to aid analysis and understanding of the data
