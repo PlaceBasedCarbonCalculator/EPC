@@ -41,3 +41,12 @@ While the cleaning is not perfect, it does significantly reduce variation betwee
 
 The `merge_epcs` function resolves differences between the Scotland and England/Wales datasets. Specifically, the different age bands used by Scotland are mapped to the English/Welsh version. This can result in minor errors, e.g.  "1992-1998" becomes "1991-1995"
 
+## Usage
+
+Note that these scripts read the whole EPC dataset into memory and so require a PC with a large amount of RAM (e.g. 256 GB).
+
+This repo also works on the assumption that the [build](https://github.com/PlaceBasedCarbonCalculator/build) and [inputdata](https://github.com/PlaceBasedCarbonCalculator/inputdata) repos are available on the same drive to provide inputs and as a place for exports.
+
+## Data Download
+
+See the [website](https://www.carbon.place/data/) for public downloads.
