@@ -36,11 +36,8 @@ Important cleaning functions include:
 4. `splitwelsh`, in some EPCs, the text is provided in both English and Welsh, separated by `|`; this function splits and removes the Welsh version.
 5. `translatewelsh` is used when only the Welsh text is available and translates common Welsh phrases to their English equivalents. E.g. "briciau solet" to "solid brick". I used Google Translate for these, and feedback from Welsh speakers is welcome. Oddly, EPCs in Welsh don't only occur in Wales.
 
+
 While the cleaning is not perfect, it does significantly reduce variation between EPCs, which is useful for analysis. For example, instead of thousands of different Main Fuel Types in the raw data, there are about 40 distinct types in the cleaned data.
 
-
-
-
-
-
+The `merge_epcs` function resolves differences between the Scotland and England/Wales datasets. Specifically, the different age bands used by Scotland are mapped to the English/Welsh version. This can result in minor errors, e.g.  "1992-1998" becomes "1991-1995"
 
