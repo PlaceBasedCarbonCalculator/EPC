@@ -38,8 +38,7 @@ translatewelsh <- function(x){
   
   x <- gsub("thermostat ystafell yn unig","room thermostat only",x, fixed = TRUE)
   
-  x <- gsub("gwydrau dwbl llawn","fully double glazed",x, fixed = TRUE)
-  x <- gsub("gwydrau dwbl rhannol","partial double glazing",x, fixed = TRUE)
+  
   
   x <- gsub("o'r brif system","from main system",x, fixed = TRUE)
   x <- gsub("o?r brif system","from main system",x, fixed = TRUE)
@@ -47,7 +46,7 @@ translatewelsh <- function(x){
   
   x <- gsub("gwresogyddion ystafell","room heaters",x, fixed = TRUE)
   
-  x <- gsub("gwydrau dwbl gan mwyaf","mostly double glazing",x, fixed = TRUE)
+  
   x <- gsub("gwydrau sengl","single glazed",x, fixed = TRUE)
   
   x <- gsub("eiddo arall islaw","other premises below",x, fixed = TRUE)
@@ -112,6 +111,7 @@ translatewelsh <- function(x){
   
   x <- gsub("gwydrau triphlyg gan mwyaf","mostly triple glazing",x, fixed = TRUE)
   
+  
   x <- gsub("rhai gwydrau dwbl","some double glazing",x, fixed = TRUE)
   
   x <- gsub("i ofod heb ei wresogi","to unheated space",x, fixed = TRUE)
@@ -154,10 +154,11 @@ translatewelsh <- function(x){
   x <- gsub("dan y llawr","underfloor heating",x, fixed = TRUE)
   
   x <- gsub("gwydrau eilaidd llawn","full secondary glazing",x, fixed = TRUE)
-  
   x <- gsub("gwydrau lluosog ym mhobman","full double glazing",x, fixed = TRUE)
-  
   x <- gsub("gwydrau triphlyg llawn","full triple glazing",x, fixed = TRUE)
+  x <- gsub("gwydrau dwbl llawn","fully double glazed",x, fixed = TRUE)
+  x <- gsub("gwydrau dwbl rhannol","partial double glazing",x, fixed = TRUE)
+  x <- gsub("gwydrau dwbl gan mwyaf","mostly double glazing",x, fixed = TRUE)
   
   x <- gsub("an-frig","on-peak",x, fixed = TRUE)
   

@@ -31,6 +31,7 @@ scot_nondom = readRDS("../inputdata/epc/epc_scotland_nondomestic_clean.Rds")
 # IDs not in data
 
 names(certs_dom)[!names(certs_dom) %in% names(scot_dom)]
+names(scot_dom)[!names(scot_dom) %in% names(certs_dom)]
 names(certs_nondom)[!names(certs_nondom) %in% names(scot_nondom)]
 names(scot_nondom)[!names(scot_nondom) %in% names(certs_nondom)]
 
@@ -63,43 +64,6 @@ dom_all$tenure = gsub("rental","rented", dom_all$tenure)
 
 dom_all$age = gsub("England and Wales: ","", dom_all$age)
 dom_all$age[dom_all$age %in% c("INVALID!","NO DATA!")] = NA
-
-dom_all$area = round(dom_all$area, 0)
-
-
-dom_all$fuel = tolower(dom_all$fuel)
-dom_all$fuel = gsub("- this is for backwards compatibility only and should not be used","", dom_all$fuel, fixed = TRUE)
-dom_all$fuel = gsub("to be used only when there is no heating/hot-water system or data is from a community network","none", dom_all$fuel, fixed = TRUE)
-dom_all$fuel = gsub("to be used only when there is no heating/hot-water system","none", dom_all$fuel, fixed = TRUE)
-dom_all$fuel = gsub("no heating/hot-water system or data is from a community network","none", dom_all$fuel, fixed = TRUE)
-dom_all$fuel = gsub("appliances able to use ","", dom_all$fuel, fixed = TRUE)
-
-dom_all$fuel = gsub("(not community)","", dom_all$fuel, fixed = TRUE)
-dom_all$fuel = gsub("solid fuel: ","", dom_all$fuel, fixed = TRUE)
-dom_all$fuel = gsub("gas: ","", dom_all$fuel, fixed = TRUE)
-dom_all$fuel = gsub("electric","electricity", dom_all$fuel, fixed = TRUE)
-dom_all$fuel = gsub("electricity: ","", dom_all$fuel, fixed = TRUE)
-dom_all$fuel = gsub("oil: ","", dom_all$fuel, fixed = TRUE)
-dom_all$fuel = trimws(dom_all$fuel, "both")
-
-dom_all$heat_d = tolower(dom_all$heat_d)
-
-dom_all$floor_ee[!dom_all$floor_ee %in% c("Very Good","Good","Average","Poor","Very Poor")] = NA
-dom_all$water_ee[!dom_all$water_ee %in% c("Very Good","Good","Average","Poor","Very Poor")] = NA
-dom_all$wind_ee[!dom_all$wind_ee %in% c("Very Good","Good","Average","Poor","Very Poor")] = NA
-dom_all$wall_ee[!dom_all$wall_ee %in% c("Very Good","Good","Average","Poor","Very Poor")] = NA
-dom_all$roof_ee[!dom_all$roof_ee %in% c("Very Good","Good","Average","Poor","Very Poor")] = NA
-dom_all$heat_ee[!dom_all$heat_ee %in% c("Very Good","Good","Average","Poor","Very Poor")] = NA
-dom_all$con_ee[!dom_all$con_ee %in% c("Very Good","Good","Average","Poor","Very Poor")] = NA
-dom_all$light_ee[!dom_all$light_ee %in% c("Very Good","Good","Average","Poor","Very Poor")] = NA
-
-dom_all$sol_wat[dom_all$sol_wat %in% c("false","FALSE","N")] = "no"
-dom_all$sol_wat[dom_all$sol_wat %in% c("true","TRUE","Y")] = "yes"
-
-dom_all$wind_d = gsub("description: ","", dom_all$wind_d, fixed = TRUE)
-dom_all$wind_d = tolower(dom_all$wind_d)
-
-dom_all$water_d = tolower(dom_all$water_d)
 
 #Simplify ages
 simple_ages = function(x){
@@ -136,10 +100,66 @@ simple_ages = function(x){
   
 }
 
-
-
 dom_all$age = simple_ages(dom_all$age)
 
+dom_all$area = round(dom_all$area, 0)
+
+
+dom_all$fuel = tolower(dom_all$fuel)
+dom_all$fuel = gsub("- this is for backwards compatibility only and should not be used","", dom_all$fuel, fixed = TRUE)
+dom_all$fuel = gsub("to be used only when there is no heating/hot-water system or data is from a community network","none", dom_all$fuel, fixed = TRUE)
+dom_all$fuel = gsub("to be used only when there is no heating/hot-water system","none", dom_all$fuel, fixed = TRUE)
+dom_all$fuel = gsub("no heating/hot-water system or data is from a community network","none", dom_all$fuel, fixed = TRUE)
+dom_all$fuel = gsub("appliances able to use ","", dom_all$fuel, fixed = TRUE)
+
+dom_all$fuel = gsub("(not community)","", dom_all$fuel, fixed = TRUE)
+dom_all$fuel = gsub("solid fuel: ","", dom_all$fuel, fixed = TRUE)
+dom_all$fuel = gsub("gas: ","", dom_all$fuel, fixed = TRUE)
+dom_all$fuel = gsub("electricity: ","", dom_all$fuel, fixed = TRUE)
+dom_all$fuel = gsub("oil: ","", dom_all$fuel, fixed = TRUE)
+
+dom_all$fuel = gsub("subject to special condition 18","special condition", dom_all$fuel, fixed = TRUE)
+
+dom_all$fuel = gsub("from heat network data","heat network", dom_all$fuel, fixed = TRUE)
+dom_all$fuel = gsub("heat from boilers that can use","", dom_all$fuel, fixed = TRUE)
+dom_all$fuel = gsub("heat from boilers using biodiesel from any biomass source","biodiesel", dom_all$fuel, fixed = TRUE)
+dom_all$fuel = gsub("displaced from grid","", dom_all$fuel, fixed = TRUE)
+dom_all$fuel = gsub(", unspecified tariff","", dom_all$fuel, fixed = TRUE)
+
+dom_all$fuel = gsub("community heating schemes:","(community)", dom_all$fuel, fixed = TRUE)
+
+dom_all$fuel = gsub("bulk supply in bags, for ","", dom_all$fuel, fixed = TRUE)
+dom_all$fuel = gsub("in bags, for ","", dom_all$fuel, fixed = TRUE)
+dom_all$fuel = gsub("in bags for secondary heating","(secondary heating)", dom_all$fuel, fixed = TRUE)
+
+dom_all$fuel = gsub("bulk","", dom_all$fuel, fixed = TRUE)
+dom_all$fuel = gsub("heat from","", dom_all$fuel, fixed = TRUE)
+
+dom_all$fuel = gsub("electric: electric","electric", dom_all$fuel, fixed = TRUE)
+dom_all$fuel = gsub("electric","electricity", dom_all$fuel, fixed = TRUE)
+
+dom_all$fuel = gsub("dual fuel - mineral + wood","dual fuel mineral + wood", dom_all$fuel, fixed = TRUE)
+dom_all$fuel = gsub("dual fuel appliance (mineral and wood)","dual fuel mineral + wood", dom_all$fuel, fixed = TRUE)
+
+dom_all$fuel = trimws(dom_all$fuel, "both")
+
+dom_all$heat_d = tolower(dom_all$heat_d)
+
+dom_all$floor_ee[!dom_all$floor_ee %in% c("Very Good","Good","Average","Poor","Very Poor")] = NA
+dom_all$water_ee[!dom_all$water_ee %in% c("Very Good","Good","Average","Poor","Very Poor")] = NA
+dom_all$wind_ee[!dom_all$wind_ee %in% c("Very Good","Good","Average","Poor","Very Poor")] = NA
+dom_all$wall_ee[!dom_all$wall_ee %in% c("Very Good","Good","Average","Poor","Very Poor")] = NA
+dom_all$roof_ee[!dom_all$roof_ee %in% c("Very Good","Good","Average","Poor","Very Poor")] = NA
+dom_all$heat_ee[!dom_all$heat_ee %in% c("Very Good","Good","Average","Poor","Very Poor")] = NA
+dom_all$con_ee[!dom_all$con_ee %in% c("Very Good","Good","Average","Poor","Very Poor")] = NA
+dom_all$light_ee[!dom_all$light_ee %in% c("Very Good","Good","Average","Poor","Very Poor")] = NA
+
+dom_all$sol_wat[dom_all$sol_wat %in% c("false","FALSE","N")] = "no"
+dom_all$sol_wat[dom_all$sol_wat %in% c("true","TRUE","Y")] = "yes"
+
+dom_all$wind_d = trimws(dom_all$wind_d)
+
+dom_all$pv <- ifelse(is.na(dom_all$pv),"no","yes")
 
 saveRDS(dom_all, "../inputdata/epc/GB_domestic_epc.Rds")
 

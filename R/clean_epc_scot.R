@@ -1,4 +1,4 @@
-ncores = 20
+ncores = 25
 certs <- readRDS("epc_scotland_domestic_all_raw.Rds")
 uprn <- readRDS("../build/_targets/objects/uprn")
 uprn <- sf::st_as_sf(uprn)
@@ -86,7 +86,7 @@ certs$WINDOWS_DESCRIPTION    <- future_map_chr(certs$WINDOWS_DESCRIPTION,    com
 #certs$TRANSACTION_TYPE <- future_map_chr(certs$TRANSACTION_TYPE, standardclean,  .progress = TRUE)
 certs$MAIN_FUEL <- future_map_chr(certs$MAIN_FUEL, standardclean,  .progress = TRUE)
 
-
+plan(sequential)
 
 # FLOOR DeSCRIPTION -------------------------------------------------------
 
