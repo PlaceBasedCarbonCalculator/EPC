@@ -159,7 +159,8 @@ dom_all$sol_wat[dom_all$sol_wat %in% c("true","TRUE","Y")] = "yes"
 
 dom_all$wind_d = trimws(dom_all$wind_d)
 
-dom_all$pv <- ifelse(is.na(dom_all$pv),"no","yes")
+#dom_all$pv <- ifelse(is.na(dom_all$pv),"no","yes")
+table(dom_all$pv, useNA = "always")
 
 saveRDS(dom_all, "../inputdata/epc/GB_domestic_epc.Rds")
 

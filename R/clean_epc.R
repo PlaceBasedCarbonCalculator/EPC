@@ -970,7 +970,9 @@ HOTWATER_DESCRIPTION = c(", plus solar, no cylinder thermostat",
                          NA)
 
 
-
+certs$PHOTO_SUPPLY[is.na(certs$PHOTO_SUPPLY)] = "no"
+certs$PHOTO_SUPPLY[certs$PHOTO_SUPPLY == "0.0"] = "no"
+certs$PHOTO_SUPPLY[certs$PHOTO_SUPPLY != "no"] = "yes"
 
 # FLOOR_LEVEL -------------------------------------------------------------
 

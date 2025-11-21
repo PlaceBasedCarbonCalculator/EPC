@@ -10,7 +10,7 @@ source("R/funtions.R", encoding="UTF-8")
 path = "../inputdata/epc/"
 
 dir.create(file.path(tempdir(),"epc"))
-unzip(file.path(path,"Scotland_Domestic_EPC_data_2014-2024Q2.zip"), 
+unzip(file.path(path,"Scotland_Domestic_EPC_data_2014-2025Q2.zip"), 
       exdir = file.path(tempdir(),"epc"))
 
 files <- list.files(file.path(tempdir(),"epc"), recursive = TRUE, full.names = TRUE)

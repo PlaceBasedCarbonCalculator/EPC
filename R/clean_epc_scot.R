@@ -1,4 +1,4 @@
-ncores = 25
+ncores = 10
 certs <- readRDS("epc_scotland_domestic_all_raw.Rds")
 uprn <- readRDS("../build/_targets/objects/uprn")
 uprn <- sf::st_as_sf(uprn)
@@ -21,6 +21,7 @@ names(certs)[names(certs) == "Property Type"] = "PROPERTY_TYPE"
 names(certs)[names(certs) == "Tenure"] = "TENURE"
 names(certs)[names(certs) == "Part 1 Construction Age Band"] = "CONSTRUCTION_AGE_BAND"
 names(certs)[names(certs) == "Total floor area (m²)"] = "TOTAL_FLOOR_AREA"
+names(certs)[names(certs) == "Total floor area (m�)"] = "TOTAL_FLOOR_AREA"
 names(certs)[names(certs) == "Main Heating 1 Fuel Type"] = "MAIN_FUEL"
 names(certs)[names(certs) == "Multiple Glazing Type"] = "GLAZED_TYPE"
 names(certs)[names(certs) == "WALL_DESCRIPTION"] = "WALLS_DESCRIPTION"
@@ -990,8 +991,13 @@ HOTWATER_DESCRIPTION = c(", plus solar, no cylinder thermostat",
                          "solid fuel boiler/circulator, plus solar, no cylinder thermostat",
                          NA)
 
-
-
+# PHOTO_SUPPLY
+certs$PHOTO_SUPPLY[is.na(certs$PHOTO_SUPPLY)] = "no"
+certs$PHOTO_SUPPLY[certs$PHOTO_SUPPLY %in% 
+                     c("Array: Roof Area: 0%; Connection: not applicable (FGHRS or no PV);  |",
+                       "Array: Roof Area: 0%; Connection: not recorded;  |"
+                       )] = "no"
+certs$PHOTO_SUPPLY[certs$PHOTO_SUPPLY != "no"] = "yes"
 
 # FLOOR_LEVEL -------------------------------------------------------------
 

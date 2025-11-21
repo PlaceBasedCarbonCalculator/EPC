@@ -10,7 +10,7 @@ source("R/funtions.R", encoding="UTF-8")
 path = "../inputdata/epc/"
 
 dir.create(file.path(tempdir(),"epc"))
-unzip(file.path(path,"all-domestic-certificates-single-file-20240630.zip"), 
+unzip(file.path(path,"all-domestic-certificates-single-file-20250930.zip"), 
       exdir = file.path(tempdir(),"epc"))
 
 files <- list.files(file.path(tempdir(),"epc"), recursive = TRUE, full.names = TRUE)
