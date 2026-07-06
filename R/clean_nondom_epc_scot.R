@@ -1,11 +1,16 @@
-ncores = 20
-certs <- readRDS("epc_scotland_nondomestic_all_raw.Rds")
-uprn <- readRDS("../build/_targets/objects/uprn")
-uprn <- sf::st_as_sf(uprn)
-
 library(future)
 library(furrr)
 library(readr)
+library(sf)
+library(dplyr)
+
+ncores = 20
+certs <- readRDS("epc_scotland_nondomestic_all_raw.Rds")
+uprn <- readRDS("../build/_targets/objects/uprn_historical")
+uprn <- sf::st_as_sf(uprn, coords = c("LONGITUDE","LATITUDE"), crs = 4326)
+uprn <- uprn[,c("UPRN","date_first","date_last")]
+
+
 
 source("R/funtions.R")
 source("R/translate_welsh.R")
@@ -22,8 +27,13 @@ names(certs)[names(certs) == "Total floor area (m²)"] = "FLOOR_AREA"
 names(certs)[names(certs) == "Main Heating Fuel"] = "MAIN_HEATING_FUEL"
 names(certs)[names(certs) == "Transaction Type"] = "TRANSACTION_TYPE"
 
+names(certs)[names(certs) == "POST_TOWN" ] = "ADDRESS3"
+names(certs)[names(certs) == "Postcode" ] = "POSTCODE"
+
+
 # Subset to key variables
-certs <- certs[,c("UPRN","ADDRESS1","ADDRESS2","ASSET_RATING",
+certs <- certs[,c("UPRN","ADDRESS1","ADDRESS2","ADDRESS3","POSTCODE",
+                  "ASSET_RATING",
                   "PROPERTY_TYPE",
                   "ASSET_RATING_BAND","TRANSACTION_TYPE",
                   "FLOOR_AREA",
@@ -47,9 +57,6 @@ certs <- certs[!sf::st_is_empty(certs),]
 # long strings
 
 # Time consuming parts ----------------------------------------------------
-
-
-
 
 certs$MAIN_HEATING_FUEL <- future_map_chr(certs$MAIN_HEATING_FUEL, standardclean,  .progress = TRUE)
 

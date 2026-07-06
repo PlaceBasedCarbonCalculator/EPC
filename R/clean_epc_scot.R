@@ -1,11 +1,14 @@
 ncores = 10
 certs <- readRDS("epc_scotland_domestic_all_raw.Rds")
-uprn <- readRDS("../build/_targets/objects/uprn")
-uprn <- sf::st_as_sf(uprn)
+uprn <- readRDS("../build/_targets/objects/uprn_historical")
+uprn <- sf::st_as_sf(uprn, coords = c("LONGITUDE","LATITUDE"), crs = 4326)
+uprn <- uprn[,c("UPRN","date_first","date_last")]
 
 library(future)
 library(furrr)
 library(readr)
+library(sf)
+library(dplyr)
 
 source("R/funtions.R")
 source("R/translate_welsh.R")
@@ -28,9 +31,12 @@ names(certs)[names(certs) == "WALL_DESCRIPTION"] = "WALLS_DESCRIPTION"
 names(certs)[names(certs) == "WALL_ENERGY_EFF"] = "WALLS_ENERGY_EFF"
 names(certs)[names(certs) == "Photovoltaic Supply"] = "PHOTO_SUPPLY"
 names(certs)[names(certs) == "Solar Water Heating"] = "SOLAR_WATER_HEATING_FLAG"
+names(certs)[names(certs) == "Postcode"] = "POSTCODE"
+names(certs)[names(certs) == "POST_TOWN"] = "ADDRESS3"
 
 # Subset to key variables
-certs <- certs[,c("UPRN","ADDRESS1",
+certs <- certs[,c("UPRN",
+                  "ADDRESS1","ADDRESS2","ADDRESS3","POSTCODE",
                   "CURRENT_ENERGY_RATING","CURRENT_ENERGY_EFFICIENCY","POTENTIAL_ENERGY_EFFICIENCY",
                   "INSPECTION_DATE","BUILT_FORM","PROPERTY_TYPE","TENURE","CONSTRUCTION_AGE_BAND",
                   "TOTAL_FLOOR_AREA","MAIN_FUEL","MAINHEAT_DESCRIPTION",

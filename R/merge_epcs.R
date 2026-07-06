@@ -38,18 +38,19 @@ names(scot_nondom)[!names(scot_nondom) %in% names(certs_nondom)]
 certs_dom = certs_dom[,names(scot_dom)]
 dom_all = rbind(certs_dom, scot_dom)
 
-nondom_all = rbind(certs_nondom, scot_nondom)
 #rm(certs_nondom, scot_nondom, certs_dom, scot_dom)
 
 # Clean up for publication
-names(dom_all) = c("UPRN","addr","cur_rate","cur_ee",
+names(dom_all) = c("UPRN","addr",
+                   "ADDRESS2","ADDRESS3","POSTCODE",
+                   "cur_rate","cur_ee",
                    "per_ee","INSPECTION_DATE","b_type","p_type",
                    "tenure","age","area","fuel",
                    "heat_d","g_type","floor_d","floor_ee",
                    "water_d","water_ee","wind_d","wind_ee",
                    "wall_d","wall_ee","roof_d","roof_ee",
                    "heat_ee","con_d","con_ee","light_ee",
-                   "pv","sol_wat","geometry"  )
+                   "pv","sol_wat","uprn_date_first","uprn_date_last","geometry"  )
 
 dom_all$year = lubridate::year(lubridate::ymd(dom_all$INSPECTION_DATE))
 dom_all$INSPECTION_DATE  = NULL
@@ -80,7 +81,8 @@ simple_ages = function(x){
   z[y >= 1996 & y <= 2002] = "1996-2002"
   z[y >= 2003 & y <= 2006] = "2003-2006"
   z[y >= 2007 & y <= 2011] = "2007-2011"
-  z[y >= 2012] = "2012 onwards"
+  z[y >= 2012 & y <= 2021] = "2012-2021"
+  z[y >= 2022] = "2022 onwards"
   
   x = dplyr::if_else(is.na(z),x,z)
   x[x == "before 1919"] = "before 1900"
@@ -95,6 +97,7 @@ simple_ages = function(x){
   x[x == "2003-2007"] = "2003-2006"
   x[x == "2007 onwards"] = "2007-2011"
   x[x == "2008 onwards"] = "2007-2011"
+  x[x == "2012 onwards"] = "2012-2021"
   
   x
   
@@ -141,6 +144,17 @@ dom_all$fuel = gsub("electric","electricity", dom_all$fuel, fixed = TRUE)
 dom_all$fuel = gsub("dual fuel - mineral + wood","dual fuel mineral + wood", dom_all$fuel, fixed = TRUE)
 dom_all$fuel = gsub("dual fuel appliance (mineral and wood)","dual fuel mineral + wood", dom_all$fuel, fixed = TRUE)
 
+dom_all$fuel = gsub("(community)  mains gas","mains gas (community)", dom_all$fuel, fixed = TRUE)
+dom_all$fuel = gsub("(community)  boilers - biomass","biomass (community)", dom_all$fuel, fixed = TRUE)
+
+dom_all$fuel = gsub("(community)  electricity heat pump","electricity (community)", dom_all$fuel, fixed = TRUE)
+dom_all$fuel = gsub("(community)  heat pump","electricity (community)", dom_all$fuel, fixed = TRUE)
+
+dom_all$fuel = gsub("anthracite","coal", dom_all$fuel, fixed = TRUE)
+dom_all$fuel = gsub("wood pellets (main heating)","wood pellets", dom_all$fuel, fixed = TRUE)
+
+dom_all$fuel = gsub("no heating/hot-water system","none", dom_all$fuel, fixed = TRUE)
+
 dom_all$fuel = trimws(dom_all$fuel, "both")
 
 dom_all$heat_d = tolower(dom_all$heat_d)
@@ -164,9 +178,14 @@ table(dom_all$pv, useNA = "always")
 
 saveRDS(dom_all, "../inputdata/epc/GB_domestic_epc.Rds")
 
+certs_nondom = certs_nondom[,names(certs_nondom) %in% names(scot_nondom)]
+scot_nondom$ADDRESS3 = "" #Town in Scotland and not town in England/Wales
 
-names(nondom_all) = c("UPRN","adr1","adr2","rating","type","band","transaction", 
-                      "area","INSPECTION_DATE","fuel","geometry"  )
+nondom_all = rbind(certs_nondom, scot_nondom)
+
+
+names(nondom_all) = c("adr1","adr2","adr3","postcode","rating","band","type","INSPECTION_DATE","transaction", 
+                      "fuel","area","UPRN","uprn_date_first","uprn_date_last","geometry"  )
 nondom_all$year = lubridate::year(lubridate::ymd(nondom_all$INSPECTION_DATE))
 nondom_all$INSPECTION_DATE  = NULL
 nondom_all$band[nondom_all$band == "Carbon Neu"] = "A+"

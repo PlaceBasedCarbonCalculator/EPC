@@ -1,17 +1,21 @@
-ncores = 25
-certs <- readRDS("epc_domestic_all_raw.Rds")
-uprn <- readRDS("../build/_targets/objects/uprn")
-uprn <- sf::st_as_sf(uprn)
-
 library(future)
 library(furrr)
 library(readr)
+library(sf)
+library(dplyr)
+
+ncores = 25
+certs <- readRDS("epc_domestic_all_raw.Rds")
+uprn <- readRDS("../build/_targets/objects/uprn_historical")
+uprn <- sf::st_as_sf(uprn, coords = c("LONGITUDE","LATITUDE"), crs = 4326)
+uprn <- uprn[,c("UPRN","date_first","date_last")]
 
 source("R/funtions.R")
 source("R/translate_welsh.R")
 
 # Subset to key variables
-certs <- certs[,c("BUILDING_REFERENCE_NUMBER","ADDRESS1",
+certs <- certs[,c("BUILDING_REFERENCE_NUMBER",
+                  "ADDRESS1","ADDRESS2","ADDRESS3","POSTCODE","LOCAL_AUTHORITY","COUNTY",
                   "CURRENT_ENERGY_RATING","CURRENT_ENERGY_EFFICIENCY","POTENTIAL_ENERGY_EFFICIENCY","UPRN",
                   "INSPECTION_DATE","BUILT_FORM","PROPERTY_TYPE","TENURE","CONSTRUCTION_AGE_BAND",
                   "TOTAL_FLOOR_AREA","MAIN_FUEL","MAINHEAT_DESCRIPTION",

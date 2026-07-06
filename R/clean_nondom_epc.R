@@ -1,17 +1,21 @@
-ncores = 10
-certs <- readRDS("epc_nondomestic_all_raw.Rds")
-uprn <- readRDS("../build/_targets/objects/uprn")
-uprn <- sf::st_as_sf(uprn)
-
 library(future)
 library(furrr)
 library(readr)
+library(sf)
+library(dplyr)
+
+
+ncores = 10
+certs <- readRDS("epc_nondomestic_all_raw.Rds")
+uprn <- readRDS("../build/_targets/objects/uprn_historical")
+uprn <- sf::st_as_sf(uprn, coords = c("LONGITUDE","LATITUDE"), crs = 4326)
+uprn <- uprn[,c("UPRN","date_first","date_last")]
 
 source("R/funtions.R")
 source("R/translate_welsh.R")
 
 # Subset to key variables
-certs <- certs[,c("UPRN","ADDRESS1","ADDRESS2","ASSET_RATING",
+certs <- certs[,c("UPRN","ADDRESS1","ADDRESS2","ADDRESS3", "POSTCODE","ASSET_RATING",
                   "PROPERTY_TYPE",
                "ASSET_RATING_BAND","TRANSACTION_TYPE",
                "FLOOR_AREA",
