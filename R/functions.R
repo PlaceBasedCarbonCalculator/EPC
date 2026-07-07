@@ -1,24 +1,40 @@
+# Shared cleaning functions and column specifications for the EPC scripts.
+# Most functions take a single character value and are applied over columns
+# with (furrr::)future_map_chr in the clean_* scripts.
+
+# Standard cleaning sequence for a free-text EPC field: drop the Welsh
+# duplicate text, normalise spelling/punctuation, translate Welsh-only text,
+# then standardise heat-loss units. split/fix let callers skip steps that
+# don't apply to a field.
 common_clean <- function(x, split = TRUE, fix = TRUE){
-  
+
   if(split){
     x = splitwelsh(x)
   }
-  
+
   x = standardclean(x)
   x = translatewelsh(x)
-  
+
   if(fix){
     x = fix_wm2k(x)
   }
-  
+
   x
 }
 
 
 
-
+# Standardise the many spellings of "watts per square metre kelvin"
+# (e.g. "0.5 W/m²K", "0.5 w/m?k") to "0.50 w/m2k" with the number formatted
+# to 2 decimal places. Expects lower-case input (run standardclean first).
+# With check = TRUE, stops on values it can't parse instead of returning
+# them unchanged.
 fix_wm2k <- function(x, check = FALSE){
-  
+
+  if(is.na(x)){
+    return(x)
+  }
+
   if(grepl("w",x)){
     x <- gsub("²","2", x)
     
@@ -38,15 +54,15 @@ fix_wm2k <- function(x, check = FALSE){
         }
       }
       if(nchar(y[1]) != 4){
-        yn <- as.numeric(y[1])
-        if(is.nan(yn)){
+        yn <- suppressWarnings(as.numeric(y[1]))
+        if(is.na(yn)){
           if(check){
             stop(paste0("Don't know how to process ",y[1]))
           } else {
             return(x)
           }
         }
-        y[1] <- format(as.numeric(y[1]), digits = 2, nsmall = 2)
+        y[1] <- format(yn, digits = 2, nsmall = 2)
       }
       x <- paste0(y[1]," ",y[2])
     }
@@ -57,6 +73,9 @@ fix_wm2k <- function(x, check = FALSE){
 }
 
 
+# Fix common errors and inconsistencies in free-text fields
+# (e.g. "&" vs "and", double spaces, mangled separators).
+# Also lower-cases everything.
 standardclean <- function(x){
   x <- tolower(x)
   x <- gsub("????????????????????????????????????????????????????",", ", x, fixed = TRUE)
@@ -76,6 +95,10 @@ standardclean <- function(x){
   return(x)
 }
 
+# Check that column `nm` of the global data frame `certs` only contains the
+# expected values `vals`. If so, convert the column to a factor with those
+# levels (reduces memory use) and update `certs` in the global environment;
+# otherwise print the unexpected values and stop.
 validate <- function(vals, nm){
   if(all(certs[[nm]] %in% vals)){
     certs[[nm]] <- factor(certs[[nm]], levels = vals)
@@ -90,23 +113,23 @@ validate <- function(vals, nm){
 }
 
 
+# Convert a "Y"/"N" character vector to logical, preserving NAs.
+# Stops if any other value is present.
 yn2logical <- function(vec){
-  vec2 <- pbapply::pbsapply(vec, function(i){
-    if(is.na(i)){
-      return(NA)
-    } else if (i == "Y"){
-      return(TRUE)
-    } else if(i == "N"){
-      return(FALSE)
-    } else{
-      stop(paste0("Unknown value ",i))
-    }
-  }, USE.NAMES = FALSE)
+  bad <- !is.na(vec) & !vec %in% c("Y","N")
+  if(any(bad)){
+    stop(paste0("Unknown value ",paste(unique(vec[bad]), collapse = " ")))
+  }
+  vec == "Y"
 }
 
 
-# look for welsh in |
+# Some EPCs contain the same text in English and Welsh separated by "|"
+# (e.g. "solid brick|briciau solet"). Return only the English (first) parts.
 splitwelsh <- function(x){
+  if(is.na(x)){
+    return(x)
+  }
   if(grepl("|",x, fixed = TRUE)){
     y <- strsplit(x,"|", fixed = TRUE)
     y <- y[[1]]
@@ -119,6 +142,11 @@ splitwelsh <- function(x){
   return(x)
 }
 
+# The td_* and sub_* helpers below tidy one named column of the global data
+# frame `certs` and update it in the global environment:
+#   td_*(from, to)  - replace whole values that exactly match `from`
+#                     (a character vector) with `to`
+#   sub_*(from, to) - replace the substring `from` with `to` (fixed gsub)
 td_FLOOR_DESCRIPTION <- function(from,to){
   certs$FLOOR_DESCRIPTION[certs$FLOOR_DESCRIPTION %in% from] <- to
   assign('certs',certs,envir=.GlobalEnv)
@@ -207,6 +235,9 @@ td_WINDOWS_DESCRIPTION <- function(from,to){
   assign('certs',certs,envir=.GlobalEnv)
 }
 
+# Column specification for reading the England & Wales domestic
+# certificates CSV (see import_epc.R). Requires library(readr) to be
+# loaded before this file is sourced.
 col_types = readr::cols(.default = col_character(),
                  #LMK_KEY = col_double(),
                  BUILDING_REFERENCE_NUMBER = col_double(),

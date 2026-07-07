@@ -1,3 +1,11 @@
+# Merge the England & Wales and Scotland cleaned EPC datasets into single
+# Great Britain domestic and non-domestic datasets, harmonising the
+# differences between them (e.g. Scottish construction age bands are mapped
+# to the England & Wales bands) and shortening column names for publication.
+# Input:  the four *_clean.Rds files (from the clean_* scripts)
+# Output: ../inputdata/epc/GB_domestic_epc.Rds
+#         ../inputdata/epc/GB_nondomestic_epc.Rds
+
 library(sf)
 library(dplyr)
 
@@ -40,17 +48,39 @@ dom_all = rbind(certs_dom, scot_dom)
 
 #rm(certs_nondom, scot_nondom, certs_dom, scot_dom)
 
-# Clean up for publication
-names(dom_all) = c("UPRN","addr",
-                   "ADDRESS2","ADDRESS3","POSTCODE",
-                   "cur_rate","cur_ee",
-                   "per_ee","INSPECTION_DATE","b_type","p_type",
-                   "tenure","age","area","fuel",
-                   "heat_d","g_type","floor_d","floor_ee",
-                   "water_d","water_ee","wind_d","wind_ee",
-                   "wall_d","wall_ee","roof_d","roof_ee",
-                   "heat_ee","con_d","con_ee","light_ee",
-                   "pv","sol_wat","uprn_date_first","uprn_date_last","geometry"  )
+# Clean up for publication: rename by name (not position) so this keeps
+# working if the column order of the clean files changes
+dom_all = dplyr::rename(dom_all,
+                        addr = ADDRESS1,
+                        cur_rate = CURRENT_ENERGY_RATING,
+                        cur_ee = CURRENT_ENERGY_EFFICIENCY,
+                        per_ee = POTENTIAL_ENERGY_EFFICIENCY,
+                        b_type = BUILT_FORM,
+                        p_type = PROPERTY_TYPE,
+                        tenure = TENURE,
+                        age = CONSTRUCTION_AGE_BAND,
+                        area = TOTAL_FLOOR_AREA,
+                        fuel = MAIN_FUEL,
+                        heat_d = MAINHEAT_DESCRIPTION,
+                        g_type = GLAZED_TYPE,
+                        floor_d = FLOOR_DESCRIPTION,
+                        floor_ee = FLOOR_ENERGY_EFF,
+                        water_d = HOTWATER_DESCRIPTION,
+                        water_ee = HOT_WATER_ENERGY_EFF,
+                        wind_d = WINDOWS_DESCRIPTION,
+                        wind_ee = WINDOWS_ENERGY_EFF,
+                        wall_d = WALLS_DESCRIPTION,
+                        wall_ee = WALLS_ENERGY_EFF,
+                        roof_d = ROOF_DESCRIPTION,
+                        roof_ee = ROOF_ENERGY_EFF,
+                        heat_ee = MAINHEAT_ENERGY_EFF,
+                        con_d = MAINHEATCONT_DESCRIPTION,
+                        con_ee = MAINHEATC_ENERGY_EFF,
+                        light_ee = LIGHTING_ENERGY_EFF,
+                        pv = PHOTO_SUPPLY,
+                        sol_wat = SOLAR_WATER_HEATING_FLAG,
+                        uprn_date_first = date_first,
+                        uprn_date_last = date_last)
 
 dom_all$year = lubridate::year(lubridate::ymd(dom_all$INSPECTION_DATE))
 dom_all$INSPECTION_DATE  = NULL
@@ -184,8 +214,21 @@ scot_nondom$ADDRESS3 = "" #Town in Scotland and not town in England/Wales
 nondom_all = rbind(certs_nondom, scot_nondom)
 
 
-names(nondom_all) = c("adr1","adr2","adr3","postcode","rating","band","type","INSPECTION_DATE","transaction", 
-                      "fuel","area","UPRN","uprn_date_first","uprn_date_last","geometry"  )
+# Rename by name (not position) so this keeps working if the column order
+# of the clean files changes
+nondom_all = dplyr::rename(nondom_all,
+                           adr1 = ADDRESS1,
+                           adr2 = ADDRESS2,
+                           adr3 = ADDRESS3,
+                           postcode = POSTCODE,
+                           rating = ASSET_RATING,
+                           band = ASSET_RATING_BAND,
+                           type = PROPERTY_TYPE,
+                           transaction = TRANSACTION_TYPE,
+                           fuel = MAIN_HEATING_FUEL,
+                           area = FLOOR_AREA,
+                           uprn_date_first = date_first,
+                           uprn_date_last = date_last)
 nondom_all$year = lubridate::year(lubridate::ymd(nondom_all$INSPECTION_DATE))
 nondom_all$INSPECTION_DATE  = NULL
 nondom_all$band[nondom_all$band == "Carbon Neu"] = "A+"

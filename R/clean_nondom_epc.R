@@ -1,17 +1,19 @@
-library(future)
-library(furrr)
+# Clean the England & Wales non-domestic EPC data.
+# Keeps the most recent EPC per UPRN and attaches UPRN point locations.
+# Input:  epc_nondomestic_all_raw.Rds (from import_nondom_epc.R)
+#         ../build/_targets/objects/uprn_historical (from the build repo)
+# Output: ../inputdata/epc/epc_nondomestic_clean.Rds
+
 library(readr)
 library(sf)
 library(dplyr)
 
-
-ncores = 10
 certs <- readRDS("epc_nondomestic_all_raw.Rds")
 uprn <- readRDS("../build/_targets/objects/uprn_historical")
 uprn <- sf::st_as_sf(uprn, coords = c("LONGITUDE","LATITUDE"), crs = 4326)
 uprn <- uprn[,c("UPRN","date_first","date_last")]
 
-source("R/funtions.R")
+source("R/functions.R")
 source("R/translate_welsh.R")
 
 # Subset to key variables

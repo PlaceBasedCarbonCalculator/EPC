@@ -1,11 +1,14 @@
-# Read in EPC Data
-# Settings ---------------------------------------------------------------
+# Read in the raw England & Wales Display Energy Certificate (DEC) data
+# and save as an Rds file.
+# Input:  ../inputdata/epc/all-display-certificates-single-file-*.zip
+#         (from https://epc.opendatacommunities.org/)
+# Output: dec_all_raw.Rds
 
 # Setup ---------------------------------------------------------------
 library(dplyr)
 library(readr)
 source("R/translate_welsh.R", encoding="UTF-8")
-source("R/funtions.R", encoding="UTF-8")
+source("R/functions.R", encoding="UTF-8")
 
 path = "../inputdata/epc/"
 

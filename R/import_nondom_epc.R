@@ -1,11 +1,14 @@
-# Read in EPC Data
-# Settings ---------------------------------------------------------------
+# Read in the raw England & Wales non-domestic EPC data and save as
+# Rds files.
+# Input:  ../inputdata/epc/all-non-domestic-certificates-single-file-*.zip
+#         (from https://epc.opendatacommunities.org/)
+# Output: epc_nondomestic_all_raw.Rds, epc_nondomestic_reccs_all_raw.Rds
 
 # Setup ---------------------------------------------------------------
 library(dplyr)
 library(readr)
 source("R/translate_welsh.R", encoding="UTF-8")
-source("R/funtions.R", encoding="UTF-8")
+source("R/functions.R", encoding="UTF-8")
 
 path = "../inputdata/epc/"
 

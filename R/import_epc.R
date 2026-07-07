@@ -1,11 +1,15 @@
-# Read in EPC Data
-# Settings ---------------------------------------------------------------
+# Read in the raw England & Wales domestic EPC data, do some basic
+# pre-cleaning (typed columns, Y/N flags to logical, missing-data codes to
+# NA), and save as Rds files.
+# Input:  ../inputdata/epc/all-domestic-certificates-single-file-*.zip
+#         (from https://epc.opendatacommunities.org/)
+# Output: epc_domestic_all_raw.Rds, epc_domestic_reccs_all_raw.Rds
 
 # Setup ---------------------------------------------------------------
 library(dplyr)
 library(readr)
 source("R/translate_welsh.R", encoding="UTF-8")
-source("R/funtions.R", encoding="UTF-8")
+source("R/functions.R", encoding="UTF-8")
 
 path = "../inputdata/epc/"
 
