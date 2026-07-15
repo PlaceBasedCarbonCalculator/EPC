@@ -1,3 +1,10 @@
+# Clean the Scottish non-domestic EPC data.
+# Renames columns to their England & Wales equivalents, keeps the most
+# recent EPC per UPRN, and attaches UPRN point locations.
+# Input:  epc_scotland_nondomestic_all_raw.Rds (from import_nondom_epc_scotland.R)
+#         ../build/_targets/objects/uprn_historical (from the build repo)
+# Output: ../inputdata/epc/epc_scotland_nondomestic_clean.Rds
+
 library(future)
 library(furrr)
 library(readr)
@@ -12,7 +19,7 @@ uprn <- uprn[,c("UPRN","date_first","date_last")]
 
 
 
-source("R/funtions.R")
+source("R/functions.R")
 source("R/translate_welsh.R")
 
 # Rename to England names
@@ -23,7 +30,7 @@ names(certs)[names(certs) == "Energy Band"] = "ASSET_RATING_BAND"
 names(certs)[names(certs) == "Current Energy Performance Rating"] = "ASSET_RATING"
 names(certs)[names(certs) == "Date of Assessment"] = "INSPECTION_DATE"
 names(certs)[names(certs) == "Property Type"] = "PROPERTY_TYPE"
-names(certs)[names(certs) == "Total floor area (m²)"] = "FLOOR_AREA"
+names(certs)[names(certs) == "Total floor area (mÂ²)"] = "FLOOR_AREA"
 names(certs)[names(certs) == "Main Heating Fuel"] = "MAIN_HEATING_FUEL"
 names(certs)[names(certs) == "Transaction Type"] = "TRANSACTION_TYPE"
 
@@ -58,7 +65,11 @@ certs <- certs[!sf::st_is_empty(certs),]
 
 # Time consuming parts ----------------------------------------------------
 
+plan(multisession, workers = ncores)
+
 certs$MAIN_HEATING_FUEL <- future_map_chr(certs$MAIN_HEATING_FUEL, standardclean,  .progress = TRUE)
+
+plan(sequential)
 
 
 

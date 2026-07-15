@@ -1,3 +1,11 @@
+# Clean the England & Wales domestic EPC data.
+# Keeps the most recent EPC per UPRN, attaches UPRN point locations, and
+# standardises the free-text description fields against controlled
+# vocabularies (see functions.R and translate_welsh.R).
+# Input:  epc_domestic_all_raw.Rds (from import_epc.R)
+#         ../build/_targets/objects/uprn_historical (from the build repo)
+# Output: ../inputdata/epc/epc_domestic_clean.Rds
+
 library(future)
 library(furrr)
 library(readr)
@@ -10,7 +18,7 @@ uprn <- readRDS("../build/_targets/objects/uprn_historical")
 uprn <- sf::st_as_sf(uprn, coords = c("LONGITUDE","LATITUDE"), crs = 4326)
 uprn <- uprn[,c("UPRN","date_first","date_last")]
 
-source("R/funtions.R")
+source("R/functions.R")
 source("R/translate_welsh.R")
 
 # Subset to key variables
@@ -523,10 +531,7 @@ td_mainheat_description(c("radiator heating, heat from boilers gas",
                           "radiator heating, mains gas"),"boiler, radiators, mains gas")
 
 td_mainheat_description(c("community heap pump",
-                          "community heat pump, heat pump"),"community heap pump,")
-
-td_mainheat_description(c("community heap pump",
-                          "community heat pump, heat pump"),"community heap pump,")
+                          "community heat pump, heat pump"),"community heat pump,")
 
 td_mainheat_description("community heat pump, underfloor heating, heat pump","community heat pump, underfloor heating")
 
@@ -1092,14 +1097,14 @@ certs$PHOTO_SUPPLY[certs$PHOTO_SUPPLY != "no"] = "yes"
 # certs$LIGHTING_DESCRIPTION <- gsub("goleuadau ynni-isel mewn ","",certs$LIGHTING_DESCRIPTION, fixed = TRUE)
 # certs$LIGHTING_DESCRIPTION <- gsub("% o'r mannau gosod","",certs$LIGHTING_DESCRIPTION, fixed = TRUE)
 # certs$LIGHTING_DESCRIPTION <- gsub("% o?r mannau gosod","",certs$LIGHTING_DESCRIPTION, fixed = TRUE)
-# certs$LIGHTING_DESCRIPTION <- gsub("ogçör mannau gosod","",certs$LIGHTING_DESCRIPTION, fixed = TRUE)
+# certs$LIGHTING_DESCRIPTION <- gsub("ogÃ§Ã¶r mannau gosod","",certs$LIGHTING_DESCRIPTION, fixed = TRUE)
 # certs$LIGHTING_DESCRIPTION <- gsub("% o???r mannau gosod","",certs$LIGHTING_DESCRIPTION, fixed = TRUE)
 # certs$LIGHTING_DESCRIPTION <- gsub("goleuadau ynni-isel ym mhob un o?r mannau gosod","100",certs$LIGHTING_DESCRIPTION, fixed = TRUE)
 # 
 # certs$LIGHTING_DESCRIPTION[certs$LIGHTING_DESCRIPTION == "dim goleuadau ynni-isel"] <- "0"
 # certs$LIGHTING_DESCRIPTION[certs$LIGHTING_DESCRIPTION == "low energy lighting 100% 100"] <- "100"
 # certs$LIGHTING_DESCRIPTION[certs$LIGHTING_DESCRIPTION == "goleuadau ynni-isel ym mhob un o'r mannau gosod"] <- "100"
-# certs$LIGHTING_DESCRIPTION[certs$LIGHTING_DESCRIPTION == "goleuadau ynni-isel ym mhob un ogçör mannau gosod"] <- "100"
+# certs$LIGHTING_DESCRIPTION[certs$LIGHTING_DESCRIPTION == "goleuadau ynni-isel ym mhob un ogÃ§Ã¶r mannau gosod"] <- "100"
 # 
 # LIGHTING_DESCRIPTION <- as.integer(as.numeric(certs$LIGHTING_DESCRIPTION))
 # 
@@ -1116,13 +1121,12 @@ certs$PHOTO_SUPPLY[certs$PHOTO_SUPPLY != "no"] = "yes"
 
 # Finish Up ---------------------------------------------------------------
 
-saveRDS(certs,"../inputdata/epc/epc_domestic_clean.Rds")
-
-
+# Check the cleaned columns only contain expected values (and convert them
+# to factors, which reduces memory use) before saving
 validate(FLOOR_DESCRIPTION, "FLOOR_DESCRIPTION")
-validate(TRANSACTION_TYPE, "TRANSACTION_TYPE")
-validate(SECONDHEAT_DESCRIPTION, "SECONDHEAT_DESCRIPTION")
-validate(FLOOR_LEVEL, "FLOOR_LEVEL")
+#validate(TRANSACTION_TYPE, "TRANSACTION_TYPE")
+#validate(SECONDHEAT_DESCRIPTION, "SECONDHEAT_DESCRIPTION")
+#validate(FLOOR_LEVEL, "FLOOR_LEVEL")
 validate(HOTWATER_DESCRIPTION, "HOTWATER_DESCRIPTION")
 validate(WINDOWS_DESCRIPTION, "WINDOWS_DESCRIPTION")
 validate(MAINHEATCONT_DESCRIPTION, "MAINHEATCONT_DESCRIPTION")
@@ -1130,3 +1134,5 @@ validate(MAINHEAT_DESCRIPTION, "MAINHEAT_DESCRIPTION")
 validate(MAIN_FUEL,"MAIN_FUEL")
 validate(ROOF_DESCRIPTION, "ROOF_DESCRIPTION")
 validate(WALLS_DESCRIPTION, "WALLS_DESCRIPTION")
+
+saveRDS(certs,"../inputdata/epc/epc_domestic_clean.Rds")

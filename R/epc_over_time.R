@@ -116,7 +116,7 @@ oac_plot = function(
     ) +
     scale_y_continuous(
       expand  = c(0, 0),
-      limits  = c(0, NA)
+      limits  = c(50, 75)
     ) +
     guides(
       color = guide_legend(
@@ -150,7 +150,7 @@ oac_plot = function(
 }
 
 oac_plot(mean_ee,"Mean energy efficiency score",dom_summary, xlims = c(2010,2024))
-ggsave("plots/averge_ee_rating.png", dpi = 300, width = 4, height = 6)
+ggsave("plots/averge_ee_rating_v2.png", dpi = 300, width = 4, height = 6)
 
 lsoa_plot = function(var = "dom_elec_kgco2e_percap",
                      title = "Change in Electrcity Emissions",
@@ -158,23 +158,23 @@ lsoa_plot = function(var = "dom_elec_kgco2e_percap",
                      bounds = bounds,
                      borders = borders,
                      islandBox = islandBox){
-  
-  yr1 = min(dat$year, na.rm = TRUE)
-  yr2 = max(dat$year, na.rm = TRUE)
-  
+
+  yr1 = min(dat$year)
+  yr2 = max(dat$year)
+
   tmap_options(component.autoscale = FALSE)
-  
-  dat = dat[,c("LSOA21CD","year",var)]
-  dat = dat[dat$year %in% c(yr1, yr2),]
+
   dat = dat |>
-    pivot_wider(id_cols = "LSOA21CD", names_from = "year", values_from = var)
+    select(all_of(c("LSOA21CD","year",var))) |>
+    filter(year %in% c(yr1, yr2)) |>
+    pivot_wider(id_cols = "LSOA21CD", names_from = "year", values_from = all_of(var))
   dat$change = (dat[[as.character(yr2)]] - dat[[as.character(yr1)]]) / dat[[as.character(yr1)]] * 100
   dat$change[is.infinite(dat$change)] = NA
-  
+
   message(names(dat))
-  
+
   dat2 = left_join(bounds, dat, by = "LSOA21CD")
-  
+
   m0 = tm_shape(dat2) +
     tm_fill(
       fill = "change",
@@ -194,7 +194,13 @@ lsoa_plot = function(var = "dom_elec_kgco2e_percap",
       fill.legend = tm_legend(
         title = paste0(title," ",yr1,"-",yr2),
         orientation = "landscape",
-        position = tm_pos_out("center","bottom")
+        position = tm_pos_out("center","bottom"),
+        text.size = 1.2,
+        title.size = 1.5,
+        bg.color = "white",
+        bg.alpha = 0.8,
+        frame = FALSE,
+        width = 32
       )
     ) +
     tm_shape(islandBox) +
@@ -205,11 +211,11 @@ lsoa_plot = function(var = "dom_elec_kgco2e_percap",
       outer.margins = c(0, 0, 0, 0),
       scale = 0.5
     )
-  
+
   m0
-  
-  
-  
+
+
+
 }
 
 
@@ -226,4 +232,4 @@ dom_lsoa_summary = dom_lsoa_summary[dom_lsoa_summary$year <= 2024 & dom_lsoa_sum
 m2 = lsoa_plot("mean_ee","% change in mean EPC score",dom_lsoa_summary,
                bounds,borders,islandBox)
 tmap_save(m2,
-          "plots/eceee_fig_epc_map.png", dpi = 600, width = 4, height = 6)
+          "plots/eceee_fig_epc_map_v2.png", dpi = 600, width = 4, height = 6)

@@ -1,20 +1,23 @@
-# Read in EPC Data
-# Settings ---------------------------------------------------------------
+# Read in the raw Scottish domestic EPC data (one CSV per quarter),
+# do some basic pre-cleaning, and save as a single Rds file.
+# Input:  ../inputdata/epc/Scotland_Domestic_EPC_data_*.zip
+#         (from https://www.scottishepcregister.org.uk/)
+# Output: epc_scotland_domestic_all_raw.Rds
 
 # Setup ---------------------------------------------------------------
 library(dplyr)
 library(readr)
 source("R/translate_welsh.R", encoding="UTF-8")
-source("R/funtions.R", encoding="UTF-8")
+source("R/functions.R", encoding="UTF-8")
 
 path = "../inputdata/epc/"
 
 dir.create(file.path(tempdir(),"epc"))
-unzip(file.path(path,"Scotland_Domestic_EPC_data_2014-2025Q2.zip"), 
+unzip(file.path(path,"Scotland_Domestic_EPC_data_2014-2025Q2.zip"),
       exdir = file.path(tempdir(),"epc"))
 
 files <- list.files(file.path(tempdir(),"epc"), recursive = TRUE, full.names = TRUE)
-files_certs <- files[grepl(".csv", files)]
+files_certs <- files[grepl("\\.csv$", files)]
 
 # Import  -------------------------------------------------------------
 certs_all = list()

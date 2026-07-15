@@ -1,16 +1,21 @@
+# Classify UPRNs by building type and tenure using the most recent
+# certificate of any kind (domestic/non-domestic EPC or DEC) lodged
+# against each UPRN.
+# Input:  the *_all_raw.Rds files (from the import_* scripts)
+#         ../build/_targets/objects/uprn (from the build repo)
+# Output: uprn_with_buidling_type.Rds / uprn_with_buidling_type.gpkg
+
 library(sf)
 library(dplyr)
 
-certs_dom = readRDS("../inputdata/epc/epc_domestic_clean.Rds")
-certs_nondom = readRDS("../inputdata/epc/epc_nondomestic_clean.Rds")
-scot_dom = readRDS("../inputdata/epc/epc_scotland_domestic_clean.Rds")
-scot_nondom = readRDS("../inputdata/epc/epc_scotland_nondomestic_clean.Rds")
-#decs = readRDS("dec_all_raw.Rds")
+certs_dom = readRDS("epc_domestic_all_raw.Rds")
+certs_nondom = readRDS("epc_nondomestic_all_raw.Rds")
+scot_dom = readRDS("epc_scotland_domestic_all_raw.Rds")
+scot_nondom = readRDS("epc_scotland_nondomestic_all_raw.Rds")
+decs = readRDS("dec_all_raw.Rds")
 
-#certs_dom = sf::st_drop_geometry(certs_dom)
-
-#uprn <- readRDS("../build/_targets/objects/uprn")
-#uprn <- sf::st_as_sf(uprn)
+uprn <- readRDS("../build/_targets/objects/uprn")
+uprn <- sf::st_as_sf(uprn)
 
 # Old Variaibles
 # Address: 36, Maxey Road
@@ -38,8 +43,7 @@ scot_nondom = readRDS("../inputdata/epc/epc_scotland_nondomestic_clean.Rds")
 
 certs_dom = certs_dom[,c("BUILDING_REFERENCE_NUMBER","ADDRESS1","UPRN","PROPERTY_TYPE","TENURE","LODGEMENT_DATETIME",
                          "CURRENT_ENERGY_RATING","CURRENT_ENERGY_EFFICIENCY","POTENTIAL_ENERGY_EFFICIENCY","BUILT_FORM",
-                         "INSPECTION_DATE",
-                         )]
+                         "INSPECTION_DATE")]
 certs_dom = certs_dom[order(certs_dom$LODGEMENT_DATETIME, decreasing = TRUE),]
 certs_dom = certs_dom[!duplicated(certs_dom$UPRN),]
 
@@ -81,8 +85,7 @@ certs_all$UPRN = as.numeric(certs_all$UPRN)
 
 
 certs_uprn = dplyr::left_join(certs_all, uprn, by = "UPRN")
-
-
+certs_uprn = sf::st_as_sf(certs_uprn)
 
 saveRDS(certs_uprn,"uprn_with_buidling_type.Rds")
 sf::st_write(certs_uprn,"uprn_with_buidling_type.gpkg", delete_dsn = TRUE)

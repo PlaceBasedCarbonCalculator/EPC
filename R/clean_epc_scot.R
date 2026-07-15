@@ -1,3 +1,12 @@
+# Clean the Scottish domestic EPC data.
+# Renames columns to their England & Wales equivalents, keeps the most
+# recent EPC per UPRN, attaches UPRN point locations, and standardises the
+# free-text description fields against the same controlled vocabularies as
+# clean_epc.R (see functions.R and translate_welsh.R).
+# Input:  epc_scotland_domestic_all_raw.Rds (from import_epc_scotland.R)
+#         ../build/_targets/objects/uprn_historical (from the build repo)
+# Output: ../inputdata/epc/epc_scotland_domestic_clean.Rds
+
 ncores = 10
 certs <- readRDS("epc_scotland_domestic_all_raw.Rds")
 uprn <- readRDS("../build/_targets/objects/uprn_historical")
@@ -10,7 +19,7 @@ library(readr)
 library(sf)
 library(dplyr)
 
-source("R/funtions.R")
+source("R/functions.R")
 source("R/translate_welsh.R")
 
 # Rename to England names
@@ -23,8 +32,8 @@ names(certs)[names(certs) == "Built Form"] = "BUILT_FORM"
 names(certs)[names(certs) == "Property Type"] = "PROPERTY_TYPE"
 names(certs)[names(certs) == "Tenure"] = "TENURE"
 names(certs)[names(certs) == "Part 1 Construction Age Band"] = "CONSTRUCTION_AGE_BAND"
-names(certs)[names(certs) == "Total floor area (m²)"] = "TOTAL_FLOOR_AREA"
-names(certs)[names(certs) == "Total floor area (m�)"] = "TOTAL_FLOOR_AREA"
+names(certs)[names(certs) == "Total floor area (mÂ²)"] = "TOTAL_FLOOR_AREA"
+names(certs)[names(certs) == "Total floor area (mï¿½)"] = "TOTAL_FLOOR_AREA"
 names(certs)[names(certs) == "Main Heating 1 Fuel Type"] = "MAIN_FUEL"
 names(certs)[names(certs) == "Multiple Glazing Type"] = "GLAZED_TYPE"
 names(certs)[names(certs) == "WALL_DESCRIPTION"] = "WALLS_DESCRIPTION"
@@ -69,12 +78,6 @@ certs <- certs[!sf::st_is_empty(certs),]
 # Time consuming parts ----------------------------------------------------
 
 plan(multisession, workers = ncores)
-
-certs$FLOOR_DESCRIPTION <- future_map_chr(certs$FLOOR_DESCRIPTION, splitwelsh,  .progress = TRUE)
-certs$FLOOR_DESCRIPTION <- future_map_chr(certs$FLOOR_DESCRIPTION, standardclean,  .progress = TRUE)
-certs$FLOOR_DESCRIPTION <- future_map_chr(certs$FLOOR_DESCRIPTION, translatewelsh,  .progress = TRUE)
-certs$FLOOR_DESCRIPTION <- future_map_chr(certs$FLOOR_DESCRIPTION, fix_wm2k,  .progress = TRUE)
-
 
 certs$FLOOR_DESCRIPTION <- future_map_chr(certs$FLOOR_DESCRIPTION, common_clean,  .progress = TRUE)
 certs$WALLS_DESCRIPTION <- future_map_chr(certs$WALLS_DESCRIPTION, common_clean,  .progress = TRUE)
@@ -547,10 +550,7 @@ td_mainheat_description(c("radiator heating, heat from boilers gas",
                           "radiator heating, mains gas"),"boiler, radiators, mains gas")
 
 td_mainheat_description(c("community heap pump",
-                          "community heat pump, heat pump"),"community heap pump,")
-
-td_mainheat_description(c("community heap pump",
-                          "community heat pump, heat pump"),"community heap pump,")
+                          "community heat pump, heat pump"),"community heat pump,")
 
 td_mainheat_description("community heat pump, underfloor heating, heat pump","community heat pump, underfloor heating")
 
@@ -1119,14 +1119,14 @@ certs$PHOTO_SUPPLY[certs$PHOTO_SUPPLY != "no"] = "yes"
 # certs$LIGHTING_DESCRIPTION <- gsub("goleuadau ynni-isel mewn ","",certs$LIGHTING_DESCRIPTION, fixed = TRUE)
 # certs$LIGHTING_DESCRIPTION <- gsub("% o'r mannau gosod","",certs$LIGHTING_DESCRIPTION, fixed = TRUE)
 # certs$LIGHTING_DESCRIPTION <- gsub("% o?r mannau gosod","",certs$LIGHTING_DESCRIPTION, fixed = TRUE)
-# certs$LIGHTING_DESCRIPTION <- gsub("ogçör mannau gosod","",certs$LIGHTING_DESCRIPTION, fixed = TRUE)
+# certs$LIGHTING_DESCRIPTION <- gsub("ogÃ§Ã¶r mannau gosod","",certs$LIGHTING_DESCRIPTION, fixed = TRUE)
 # certs$LIGHTING_DESCRIPTION <- gsub("% o???r mannau gosod","",certs$LIGHTING_DESCRIPTION, fixed = TRUE)
 # certs$LIGHTING_DESCRIPTION <- gsub("goleuadau ynni-isel ym mhob un o?r mannau gosod","100",certs$LIGHTING_DESCRIPTION, fixed = TRUE)
 # 
 # certs$LIGHTING_DESCRIPTION[certs$LIGHTING_DESCRIPTION == "dim goleuadau ynni-isel"] <- "0"
 # certs$LIGHTING_DESCRIPTION[certs$LIGHTING_DESCRIPTION == "low energy lighting 100% 100"] <- "100"
 # certs$LIGHTING_DESCRIPTION[certs$LIGHTING_DESCRIPTION == "goleuadau ynni-isel ym mhob un o'r mannau gosod"] <- "100"
-# certs$LIGHTING_DESCRIPTION[certs$LIGHTING_DESCRIPTION == "goleuadau ynni-isel ym mhob un ogçör mannau gosod"] <- "100"
+# certs$LIGHTING_DESCRIPTION[certs$LIGHTING_DESCRIPTION == "goleuadau ynni-isel ym mhob un ogÃ§Ã¶r mannau gosod"] <- "100"
 # 
 # LIGHTING_DESCRIPTION <- as.integer(as.numeric(certs$LIGHTING_DESCRIPTION))
 # 
@@ -1143,9 +1143,8 @@ certs$PHOTO_SUPPLY[certs$PHOTO_SUPPLY != "no"] = "yes"
 
 # Finish Up ---------------------------------------------------------------
 
-saveRDS(certs,"../inputdata/epc/epc_scotland_domestic_clean.Rds")
-
-
+# Check the cleaned columns only contain expected values (and convert them
+# to factors, which reduces memory use) before saving
 validate(FLOOR_DESCRIPTION, "FLOOR_DESCRIPTION")
 #validate(TRANSACTION_TYPE, "TRANSACTION_TYPE")
 #validate(SECONDHEAT_DESCRIPTION, "SECONDHEAT_DESCRIPTION")
@@ -1157,3 +1156,5 @@ validate(MAINHEAT_DESCRIPTION, "MAINHEAT_DESCRIPTION")
 validate(MAIN_FUEL,"MAIN_FUEL")
 validate(ROOF_DESCRIPTION, "ROOF_DESCRIPTION")
 validate(WALLS_DESCRIPTION, "WALLS_DESCRIPTION")
+
+saveRDS(certs,"../inputdata/epc/epc_scotland_domestic_clean.Rds")

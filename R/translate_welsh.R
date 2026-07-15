@@ -1,3 +1,9 @@
+# Translate common Welsh EPC phrases to their standard English equivalents.
+# Some EPCs are lodged in Welsh only (not always in Wales). Targets are the
+# canonical terms used in the validation lists in the clean_* scripts.
+# Phrases appear in several corrupted encodings (e.g. "?", "gçö" in place of
+# apostrophes/accents), hence the near-duplicate patterns.
+# Translations by Google Translate; feedback from Welsh speakers is welcome.
 translatewelsh <- function(x){
   x <- gsub("bwyler a rheiddiaduron","boiler and radiators",x, fixed = TRUE)
   x <- gsub("nwy prif gyflenwad","mains gas",x, fixed = TRUE)
@@ -83,7 +89,7 @@ translatewelsh <- function(x){
   x <- gsub("tywodfaen","sandstone",x, fixed = TRUE)
   
   x <- gsub("a thermostatau ar y cyfarpar","and appliance thermostats",x, fixed = TRUE)
-  x <- gsub("ac o leiaf ddau thermostat ystafell","and appliance thermostats",x, fixed = TRUE)
+  x <- gsub("ac o leiaf ddau thermostat ystafell","and at least two room thermostats",x, fixed = TRUE)
   
   x <- gsub("wrth y trawstiau","at rafters",x, fixed = TRUE)
   x <- gsub("wrth y trawstia","at rafters",x, fixed = TRUE)
@@ -164,20 +170,20 @@ translatewelsh <- function(x){
   
   x <- gsub("gwresogyddion trydan cludadwy","portable electric heaters",x, fixed = TRUE)
   
-  x <- gsub("igçör awyr y tu allan","the sky outside",x, fixed = TRUE)
+  x <- gsub("igçör awyr y tu allan","to external air",x, fixed = TRUE)
   x <- gsub("wedigçöi inswleiddio","insulated",x, fixed = TRUE)
   
-  x <- gsub("ceudod wedigçöi lenwi","cavity after filling",x, fixed = TRUE)
+  x <- gsub("ceudod wedigçöi lenwi","filled cavity",x, fixed = TRUE)
   x <- gsub("fel ygçöu hadeiladwyd","as built",x, fixed = TRUE)
   x <- gsub("wedigçöu hinswleiddio","insulated",x, fixed = TRUE)
   x <- gsub("wedigçöi inswleiddio","insulated",x, fixed = TRUE)
-  x <- gsub("ffr+óm bren","wooden frame",x, fixed = TRUE)
-  x <- gsub("wedigçöu hadeiladu yn +¦l system","built in system",x, fixed = TRUE)
-  x <- gsub("wedigçöi hinswleiddio","double insulation",x, fixed = TRUE)
+  x <- gsub("ffr+óm bren","timber frame",x, fixed = TRUE)
+  x <- gsub("wedigçöu hadeiladu yn +¦l system","system built",x, fixed = TRUE)
+  x <- gsub("wedigçöi hinswleiddio","insulated",x, fixed = TRUE)
   x <- gsub("pelenni coed","wood pellets",x, fixed = TRUE)
   
   x <- gsub("pwmp gwres sygçön tarddu yn y ddaear","ground source heat pump",x, fixed = TRUE)
-  x <- gsub("pwmp gwres sygçön tarddu yn yr awyr","air sourced heat pump",x, fixed = TRUE)
+  x <- gsub("pwmp gwres sygçön tarddu yn yr awyr","air source heat pump",x, fixed = TRUE)
   
   x <- gsub("wedi?i ragdybio ar gyfer y rhan fwyaf o?r ystafelloedd","assumed for most rooms",x, fixed = TRUE)
   
@@ -185,8 +191,8 @@ translatewelsh <- function(x){
   
   x <- gsub("ogçör brif system","from main system",x, fixed = TRUE)
   x <- gsub("o???r brif system","from main system",x, fixed = TRUE)
-  x <- gsub("nwy wrth fwy nag un pwynt","gas at more than one point",x, fixed = TRUE)
-  x <- gsub("gydag ynni?r haul","with solar energy",x, fixed = TRUE)
+  x <- gsub("nwy wrth fwy nag un pwynt","gas multipoint",x, fixed = TRUE)
+  x <- gsub("gydag ynni?r haul","plus solar",x, fixed = TRUE)
   
   x <- gsub("ar unwaith yn y fan lle maegçön cael ei ddefnyddio","instantaneous at point of use",x, fixed = TRUE)
   x <- gsub("ar unwaith yn y fan lle mae'n cael ei ddefnyddio","instantaneous at point of use",x, fixed = TRUE)
