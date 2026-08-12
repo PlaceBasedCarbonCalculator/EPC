@@ -33,7 +33,12 @@ source("R/tar_functions.R", encoding = "UTF-8")
 source("R/tar_merge.R", encoding = "UTF-8")
 
 epc_dir   <- "../inputdata/epc"
-build_obj <- "../build/_targets/objects"
+
+# uprn_historical is built by the LandOwnership repo, which owns all UPRN /
+# address work as of July 2026 (it was previously read from ../build, which
+# no longer builds it). Tracked as a file so an OS Open UPRN refresh over
+# there re-triggers the cleaning steps here.
+lo_obj    <- "../LandOwnership/_targets/objects"
 
 # Helper for the "write a canonical .Rds and track it as a file" publish steps
 save_rds_file <- function(object, path) {
@@ -53,7 +58,7 @@ list(
   tar_target(scot_nondom_7z,
              file.path(epc_dir, "Non-domestic EPC - Extended Historic Data to 2026 Q1.7z"),
              format = "file"),
-  tar_target(uprn_hist_file, file.path(build_obj, "uprn_historical"), format = "file"),
+  tar_target(uprn_hist_file, file.path(lo_obj, "uprn_historical"), format = "file"),
 
   # ---- UPRN point locations ----
   # uprn_historical is the superset (older + newer UPRNs), so it is the single
