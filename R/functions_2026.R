@@ -270,3 +270,75 @@ read_ew_csvs <- function(zip_path, which = c("certificates", "recommendations"),
   names(out) <- toupper(names(out))
   out
 }
+
+# ---------------------------------------------------------------------------
+# PHOTO_SUPPLY -> "yes"/"no"
+# ---------------------------------------------------------------------------
+# Both countries publish the PV field as a QUANTITY (percentage of roof area,
+# supply, or peak power in kWp), not as a flag, so the recode has to read the
+# number out and treat 0/blank/missing as "no".  Deriving "yes" from a parsed
+# positive number - rather than from "anything I do not recognise" - also means
+# a future change to the published format fails towards under-counting PV
+# instead of silently flagging most of the housing stock as having panels.
+
+# England & Wales: a bare number (percentage of roof area covered by PV).
+pv_flag_number <- function(x) {
+  size <- suppressWarnings(as.numeric(x))
+  ifelse(is.na(size) | size == 0, "no", "yes")
+}
+
+# Scotland: free text describing the array.  Three mutually exclusive size
+# fields appear across the corpus, so take whichever is present:
+#   "Array: Roof Area: 40%; Connection: ...;  |"
+#   "Array: Supply: 0;  |"
+#   "Array: Peak Power: 2.7; Orientation: ...;  |"
+# An empty capture ("Array: Roof Area: %;  |") parses to NA and so reads as
+# "no", which is correct - a blank array size means no PV was recorded.
+pv_flag_scotland <- function(x) {
+  num <- function(pattern) {
+    suppressWarnings(as.numeric(stringr::str_match(x, pattern)[, 2]))
+  }
+  size <- dplyr::coalesce(num("Roof Area: ([0-9.]*)%"),
+                          num("Supply: ([0-9.]*)"),
+                          num("Peak Power: ([0-9.]*)"))
+  # Values that carry no recognisable size field at all are worth knowing about
+  # - they would previously have been counted as PV.
+  unparsed <- !is.na(x) & is.na(size)
+  if (any(unparsed)) {
+    message("pv_flag_scotland: ", sum(unparsed), " value(s) with no parseable ",
+            "array size, treated as no PV, e.g. ",
+            paste(utils::head(unique(x[unparsed]), 3), collapse = " / "))
+  }
+  ifelse(is.na(size) | size == 0, "no", "yes")
+}
+
+# ---------------------------------------------------------------------------
+# INSPECTION_DATE validation
+# ---------------------------------------------------------------------------
+# A few certificates carry impossible inspection dates (years 2102, 2103, 2108
+# and 3013 in the Scottish data).  These matter twice over: they become garbage
+# `year` values downstream, and - more seriously - the clean steps keep the MOST
+# RECENT certificate per UPRN by sorting on this column, so a far-future date
+# wins that sort and the wrong certificate is kept for the dwelling.  Setting
+# them to NA fixes both: order() puts NA last, so a bad date now loses the sort
+# to any genuine one instead of beating it.
+#
+# The upper bound is the run date rather than a hard-coded year.  A certificate
+# cannot have been inspected in the future, so this never discards a valid date,
+# and it needs no editing when the data is refreshed - whereas a fixed constant
+# would silently start dropping real certificates the year after it was written.
+valid_inspection_date <- function(x, min_year = 2007, max_date = Sys.Date()) {
+  # Already a Date in every current source; parse only if it is not, and note
+  # that lubridate::year() on a Date is cheap while ymd() round-trips through
+  # character (needlessly expensive on ~18m rows, and it drops dates whose year
+  # is outside ymd()'s parseable range).
+  d <- if (inherits(x, "Date")) x else suppressWarnings(lubridate::ymd(x))
+  bad <- !is.na(d) & (lubridate::year(d) < min_year | d > max_date)
+  if (any(bad)) {
+    message("valid_inspection_date: ", sum(bad), " implausible date(s) set to NA, e.g. ",
+            paste(utils::head(sort(unique(as.character(d[bad])), decreasing = TRUE), 3),
+                  collapse = " / "))
+  }
+  d[bad] <- NA
+  d
+}

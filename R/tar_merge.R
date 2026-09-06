@@ -78,7 +78,10 @@ merge_gb_domestic <- function(certs_dom, scot_dom) {
                            uprn_date_first = date_first,
                            uprn_date_last = date_last)
 
-  dom_all$year <- lubridate::year(lubridate::ymd(dom_all$INSPECTION_DATE))
+  # valid_inspection_date() rather than a bare year(): the cleaned inputs may
+  # predate that check, and ymd() on an already-Date column round-trips through
+  # character, which is slow on ~20m rows and NAs out any year it cannot parse.
+  dom_all$year <- lubridate::year(valid_inspection_date(dom_all$INSPECTION_DATE))
   dom_all$INSPECTION_DATE <- NULL
 
   dom_all$cur_rate[!dom_all$cur_rate %in% c("A", "B", "C", "D", "E", "F", "G")] <- NA
@@ -167,7 +170,7 @@ merge_gb_nondomestic <- function(certs_nondom, scot_nondom) {
                               area = FLOOR_AREA,
                               uprn_date_first = date_first,
                               uprn_date_last = date_last)
-  nondom_all$year <- lubridate::year(lubridate::ymd(nondom_all$INSPECTION_DATE))
+  nondom_all$year <- lubridate::year(valid_inspection_date(nondom_all$INSPECTION_DATE))
   nondom_all$INSPECTION_DATE <- NULL
   nondom_all$band[nondom_all$band == "Carbon Neu"] <- "A+"
   nondom_all$band[nondom_all$band == "INVALID!"] <- NA
