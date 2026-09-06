@@ -311,3 +311,34 @@ pv_flag_scotland <- function(x) {
   }
   ifelse(is.na(size) | size == 0, "no", "yes")
 }
+
+# ---------------------------------------------------------------------------
+# INSPECTION_DATE validation
+# ---------------------------------------------------------------------------
+# A few certificates carry impossible inspection dates (years 2102, 2103, 2108
+# and 3013 in the Scottish data).  These matter twice over: they become garbage
+# `year` values downstream, and - more seriously - the clean steps keep the MOST
+# RECENT certificate per UPRN by sorting on this column, so a far-future date
+# wins that sort and the wrong certificate is kept for the dwelling.  Setting
+# them to NA fixes both: order() puts NA last, so a bad date now loses the sort
+# to any genuine one instead of beating it.
+#
+# The upper bound is the run date rather than a hard-coded year.  A certificate
+# cannot have been inspected in the future, so this never discards a valid date,
+# and it needs no editing when the data is refreshed - whereas a fixed constant
+# would silently start dropping real certificates the year after it was written.
+valid_inspection_date <- function(x, min_year = 2007, max_date = Sys.Date()) {
+  # Already a Date in every current source; parse only if it is not, and note
+  # that lubridate::year() on a Date is cheap while ymd() round-trips through
+  # character (needlessly expensive on ~18m rows, and it drops dates whose year
+  # is outside ymd()'s parseable range).
+  d <- if (inherits(x, "Date")) x else suppressWarnings(lubridate::ymd(x))
+  bad <- !is.na(d) & (lubridate::year(d) < min_year | d > max_date)
+  if (any(bad)) {
+    message("valid_inspection_date: ", sum(bad), " implausible date(s) set to NA, e.g. ",
+            paste(utils::head(sort(unique(as.character(d[bad])), decreasing = TRUE), 3),
+                  collapse = " / "))
+  }
+  d[bad] <- NA
+  d
+}

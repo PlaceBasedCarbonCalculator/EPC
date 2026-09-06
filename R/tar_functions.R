@@ -215,6 +215,8 @@ run_domestic_dictionaries <- function(certs) {
 .dom_dedupe_join <- function(certs, uprn_hist) {
   certs <- certs[!is.na(certs$UPRN), ]
   certs$UPRN <- as.numeric(certs$UPRN)
+  # Impossible dates would win the most-recent-per-UPRN sort below; NA loses it.
+  certs$INSPECTION_DATE <- valid_inspection_date(certs$INSPECTION_DATE)
   certs <- certs[order(certs$INSPECTION_DATE, decreasing = TRUE), ]
   certs <- certs[!duplicated(certs$UPRN), ]
   certs <- dplyr::left_join(certs, uprn_hist, by = c("UPRN" = "UPRN"))
@@ -328,6 +330,8 @@ clean_ew_nondomestic <- function(raw, uprn_hist) {
                    "FLOOR_AREA", "INSPECTION_DATE", "MAIN_HEATING_FUEL")]
   certs <- certs[!is.na(certs$UPRN), ]
   certs$UPRN <- as.numeric(certs$UPRN)
+  # Impossible dates would win the most-recent-per-UPRN sort below; NA loses it.
+  certs$INSPECTION_DATE <- valid_inspection_date(certs$INSPECTION_DATE)
   certs <- certs[order(certs$INSPECTION_DATE, decreasing = TRUE), ]
   certs <- certs[!duplicated(certs$UPRN), ]
   certs <- dplyr::left_join(certs, uprn_hist, by = c("UPRN" = "UPRN"))
@@ -362,6 +366,8 @@ clean_scot_nondomestic <- function(raw, uprn_hist, ncores = 20) {
                      "FLOOR_AREA", "INSPECTION_DATE", "MAIN_HEATING_FUEL")]
   certs <- certs[!is.na(certs$UPRN), ]
   certs$UPRN <- as.numeric(certs$UPRN)
+  # Impossible dates would win the most-recent-per-UPRN sort below; NA loses it.
+  certs$INSPECTION_DATE <- valid_inspection_date(certs$INSPECTION_DATE)
   certs <- certs[order(certs$INSPECTION_DATE, decreasing = TRUE), ]
   certs <- certs[!duplicated(certs$UPRN), ]
   certs <- dplyr::left_join(certs, uprn_hist, by = c("UPRN" = "UPRN"))
@@ -384,6 +390,8 @@ clean_dec <- function(raw, uprn_hist, ncores = 20) {
                    "BUILDING_ENVIRONMENT")]
   certs <- certs[!is.na(certs$UPRN), ]
   certs$UPRN <- as.numeric(certs$UPRN)
+  # Impossible dates would win the most-recent-per-UPRN sort below; NA loses it.
+  certs$INSPECTION_DATE <- valid_inspection_date(certs$INSPECTION_DATE)
   certs <- certs[order(certs$INSPECTION_DATE, decreasing = TRUE), ]
   certs <- certs[!duplicated(certs$UPRN), ]
   certs <- dplyr::left_join(certs, uprn_hist, by = c("UPRN" = "UPRN"))
