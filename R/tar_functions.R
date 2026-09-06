@@ -248,10 +248,11 @@ clean_ew_domestic <- function(raw, uprn_hist, ncores = 25) {
 
   future::plan(future::sequential)
 
-  # PHOTO_SUPPLY (England & Wales coding)
-  certs$PHOTO_SUPPLY[is.na(certs$PHOTO_SUPPLY)] <- "no"
-  certs$PHOTO_SUPPLY[certs$PHOTO_SUPPLY == "0.0"] <- "no"
-  certs$PHOTO_SUPPLY[certs$PHOTO_SUPPLY != "no"] <- "yes"
+  # PHOTO_SUPPLY (England & Wales coding): the raw column is the percentage of
+  # roof area covered by PV, read as a number, so compare numerically.  The old
+  # string test against "0.0" never matched (as.character(0) is "0"), which put
+  # every 0% record in the "yes" branch.
+  certs$PHOTO_SUPPLY <- pv_flag_number(certs$PHOTO_SUPPLY)
 
   run_domestic_dictionaries(certs)
 }
@@ -306,12 +307,13 @@ clean_scot_domestic <- function(raw, uprn_hist, ncores = 10) {
 
   future::plan(future::sequential)
 
-  # PHOTO_SUPPLY (Scotland coding)
-  certs$PHOTO_SUPPLY[is.na(certs$PHOTO_SUPPLY)] <- "no"
-  certs$PHOTO_SUPPLY[certs$PHOTO_SUPPLY %in%
-                       c("Array: Roof Area: 0%; Connection: not applicable (FGHRS or no PV);  |",
-                         "Array: Roof Area: 0%; Connection: not recorded;  |")] <- "no"
-  certs$PHOTO_SUPPLY[certs$PHOTO_SUPPLY != "no"] <- "yes"
+  # PHOTO_SUPPLY (Scotland coding): free text describing the array, e.g.
+  # "Array: Roof Area: 40%; Connection: connected to dwelling's electricity
+  # meter;  |".  Read the array size out of it rather than whitelisting whole
+  # strings: there are >14,000 distinct values and the "Connection:" clause
+  # varies independently of the size, so the old two-string list missed ~1.17m
+  # zero/blank-array records and flagged them all as having PV.
+  certs$PHOTO_SUPPLY <- pv_flag_scotland(certs$PHOTO_SUPPLY)
 
   run_domestic_dictionaries(certs)
 }

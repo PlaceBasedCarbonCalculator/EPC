@@ -270,3 +270,44 @@ read_ew_csvs <- function(zip_path, which = c("certificates", "recommendations"),
   names(out) <- toupper(names(out))
   out
 }
+
+# ---------------------------------------------------------------------------
+# PHOTO_SUPPLY -> "yes"/"no"
+# ---------------------------------------------------------------------------
+# Both countries publish the PV field as a QUANTITY (percentage of roof area,
+# supply, or peak power in kWp), not as a flag, so the recode has to read the
+# number out and treat 0/blank/missing as "no".  Deriving "yes" from a parsed
+# positive number - rather than from "anything I do not recognise" - also means
+# a future change to the published format fails towards under-counting PV
+# instead of silently flagging most of the housing stock as having panels.
+
+# England & Wales: a bare number (percentage of roof area covered by PV).
+pv_flag_number <- function(x) {
+  size <- suppressWarnings(as.numeric(x))
+  ifelse(is.na(size) | size == 0, "no", "yes")
+}
+
+# Scotland: free text describing the array.  Three mutually exclusive size
+# fields appear across the corpus, so take whichever is present:
+#   "Array: Roof Area: 40%; Connection: ...;  |"
+#   "Array: Supply: 0;  |"
+#   "Array: Peak Power: 2.7; Orientation: ...;  |"
+# An empty capture ("Array: Roof Area: %;  |") parses to NA and so reads as
+# "no", which is correct - a blank array size means no PV was recorded.
+pv_flag_scotland <- function(x) {
+  num <- function(pattern) {
+    suppressWarnings(as.numeric(stringr::str_match(x, pattern)[, 2]))
+  }
+  size <- dplyr::coalesce(num("Roof Area: ([0-9.]*)%"),
+                          num("Supply: ([0-9.]*)"),
+                          num("Peak Power: ([0-9.]*)"))
+  # Values that carry no recognisable size field at all are worth knowing about
+  # - they would previously have been counted as PV.
+  unparsed <- !is.na(x) & is.na(size)
+  if (any(unparsed)) {
+    message("pv_flag_scotland: ", sum(unparsed), " value(s) with no parseable ",
+            "array size, treated as no PV, e.g. ",
+            paste(utils::head(unique(x[unparsed]), 3), collapse = " / "))
+  }
+  ifelse(is.na(size) | size == 0, "no", "yes")
+}
